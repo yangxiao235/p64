@@ -89,7 +89,7 @@ fast integer divides for the most common divisors.
 EFUNC*/
 
 
-__inline int FastDivide(int divident, int divisor) {
+/*__inline*/ int FastDivide(int divident, int divisor) {
     switch(divisor) {
         case 1: return divident;
         case 2: return divident / 2;

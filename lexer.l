@@ -21,7 +21,7 @@ Stanford University) name.
 
 /* Redefine the yywrap so that we don't have
    to worry about lex library */
-
+#define YY_SKIP_YYWRAP
 # define yywrap() (1)
 
 static char *ReservedWords[] = {

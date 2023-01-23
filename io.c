@@ -77,13 +77,13 @@ int BlockHeight = BLOCKHEIGHT;
 /* y4m input */
 #include "vidinput.h"
 
-int y4mio;
-video_input_ycbcr frame;
-char tag[5];
-video_input vid;
+extern int y4mio;
+extern video_input_ycbcr frame;
+extern char tag[5];
+extern video_input vid;
 
 /* y4m output */
-FILE *y4mout;
+extern FILE *y4mout;
 
 /*START*/
 
