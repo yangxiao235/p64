@@ -27,8 +27,8 @@ coefficients.
 
 /*LABEL codec.c */
 
-#include "globals.h"
 #include "csize.h"
+#include "globals.h"
 
 #define fputv mputv
 #define fgetv mgetv
@@ -50,39 +50,39 @@ extern int bit_set_mask[];
 extern int Loud;
 extern int NumberNZ;
 
-extern FRAME *CFrame;
-extern IMAGE *CImage;
-extern DHUFF *T1DHuff;
-extern DHUFF *T2DHuff;
+extern FRAME* CFrame;
+extern IMAGE* CImage;
+extern DHUFF* T1DHuff;
+extern DHUFF* T2DHuff;
 
-extern EHUFF *T1EHuff;
-extern EHUFF *T2EHuff;
+extern EHUFF* T1EHuff;
+extern EHUFF* T2EHuff;
 
 int extend_mask[] = {
-0xFFFFFFFE,
-0xFFFFFFFC,
-0xFFFFFFF8,
-0xFFFFFFF0,
-0xFFFFFFE0,
-0xFFFFFFC0,
-0xFFFFFF80,
-0xFFFFFF00,
-0xFFFFFE00,
-0xFFFFFC00,
-0xFFFFF800,
-0xFFFFF000,
-0xFFFFE000,
-0xFFFFC000,
-0xFFFF8000,
-0xFFFF0000,
-0xFFFE0000,
-0xFFFC0000,
-0xFFF80000,
-0xFFF00000
+    0xFFFFFFFE,
+    0xFFFFFFFC,
+    0xFFFFFFF8,
+    0xFFFFFFF0,
+    0xFFFFFFE0,
+    0xFFFFFFC0,
+    0xFFFFFF80,
+    0xFFFFFF00,
+    0xFFFFFE00,
+    0xFFFFFC00,
+    0xFFFFF800,
+    0xFFFFF000,
+    0xFFFFE000,
+    0xFFFFC000,
+    0xFFFF8000,
+    0xFFFF0000,
+    0xFFFE0000,
+    0xFFFC0000,
+    0xFFF80000,
+    0xFFF00000
 };
 
-int CodedBlockBits=0;
-int EOBBits=0;
+int CodedBlockBits = 0;
+int EOBBits = 0;
 
 /*START*/
 
@@ -93,40 +93,41 @@ Huffman table.  The index is an offset into the matrix.
 
 EFUNC*/
 
-void EncodeAC(index,matrix)
-     int index;
-     int *matrix;
+void EncodeAC(index, matrix) int index;
+int* matrix;
 {
-  BEGIN("EncodeAC");
-  int k,r,l,code,retval,Start;
+    BEGIN("EncodeAC");
+    int k, r, l, code, retval, Start;
 
-  Start=swtell();
-  for(r=0,k=index-1;++k<BLOCKSIZE;)
-    {
-      l = matrix[k];
-      if (!l) {r++;}
-      else
-	{
-	  code = abs(l) | (r << 8);
-	  if (code != HUFFMAN_ESCAPE) {retval=Encode(code,T1EHuff);}
-	  else {retval=0;}
-	  if (!retval)
-	    {
-	      Encode(HUFFMAN_ESCAPE,T1EHuff);
-	      fputv(6,r);
-	      fputv(8,l);
-	    }
-	  else
-	    {
-	      if (l < 0){fputb(1);}
-	      else {fputb(0);}
-	    }
-	  r=0;
-	  NumberNZ++;
-	}
+    Start = swtell();
+    for (r = 0, k = index - 1; ++k < BLOCKSIZE;) {
+        l = matrix[k];
+        if (!l) {
+            r++;
+        } else {
+            code = abs(l) | (r << 8);
+            if (code != HUFFMAN_ESCAPE) {
+                retval = Encode(code, T1EHuff);
+            } else {
+                retval = 0;
+            }
+            if (!retval) {
+                Encode(HUFFMAN_ESCAPE, T1EHuff);
+                fputv(6, r);
+                fputv(8, l);
+            } else {
+                if (l < 0) {
+                    fputb(1);
+                } else {
+                    fputb(0);
+                }
+            }
+            r = 0;
+            NumberNZ++;
+        }
     }
-  CodedBlockBits+=(swtell()-Start);
-  EOBBits+=Encode(0,T1EHuff);
+    CodedBlockBits += (swtell() - Start);
+    EOBBits += Encode(0, T1EHuff);
 }
 
 /*BFUNC
@@ -137,71 +138,73 @@ first element and we save countless bits...
 
 EFUNC*/
 
-void CBPEncodeAC(index,matrix)
-     int index;
-     int *matrix;
+void CBPEncodeAC(index, matrix) int index;
+int* matrix;
 {
-  BEGIN("CBPEncodeAC");
-  int k,r,l,code,retval,ovfl,Start;
+    BEGIN("CBPEncodeAC");
+    int k, r, l, code, retval, ovfl, Start;
 
-  Start=swtell();
-  for(ovfl=1,r=0,k=index-1;++k<BLOCKSIZE;)
-    {
-      l = matrix[k];
-      if (!l) {r++;}
-      else
-	{
-	  code = abs(l) | (r << 8);
-	  if (code != HUFFMAN_ESCAPE) {retval=Encode(code,T2EHuff);}
-	  else {retval=0;}
-	  if (!retval)
-	    {
-	      Encode(HUFFMAN_ESCAPE,T2EHuff);
-	      fputv(6,r);
-	      fputv(8,l);
-	    }
-	  else
-	    {
-	      if (l < 0) {fputb(1);}
-	      else {fputb(0);}
-	    }
-	  ovfl=0;
-	  NumberNZ++;
-	  break;
-	}
+    Start = swtell();
+    for (ovfl = 1, r = 0, k = index - 1; ++k < BLOCKSIZE;) {
+        l = matrix[k];
+        if (!l) {
+            r++;
+        } else {
+            code = abs(l) | (r << 8);
+            if (code != HUFFMAN_ESCAPE) {
+                retval = Encode(code, T2EHuff);
+            } else {
+                retval = 0;
+            }
+            if (!retval) {
+                Encode(HUFFMAN_ESCAPE, T2EHuff);
+                fputv(6, r);
+                fputv(8, l);
+            } else {
+                if (l < 0) {
+                    fputb(1);
+                } else {
+                    fputb(0);
+                }
+            }
+            ovfl = 0;
+            NumberNZ++;
+            break;
+        }
     }
-  if (ovfl)
-    {
-      WHEREAMI();
-      printf("CBP block without any coefficients.\n");
-      return;
+    if (ovfl) {
+        WHEREAMI();
+        printf("CBP block without any coefficients.\n");
+        return;
     }
-  for(r=0;++k<BLOCKSIZE;)
-    {
-      l = matrix[k];
-      if (!l) {r++;}
-      else
-	{
-	  code = abs(l) | (r << 8);
-	  if (code != HUFFMAN_ESCAPE) {retval=Encode(code,T1EHuff);}
-	  else {retval=0;}
-	  if (!retval)
-	    {
-	      Encode(HUFFMAN_ESCAPE,T1EHuff);
-	      fputv(6,r);
-	      fputv(8,l);
-	    }
-	  else
-	    {
-	      if (l < 0) {fputb(1);}
-	      else {fputb(0);}
-	    }
-	  r=0;
-	  NumberNZ++;
-	}
+    for (r = 0; ++k < BLOCKSIZE;) {
+        l = matrix[k];
+        if (!l) {
+            r++;
+        } else {
+            code = abs(l) | (r << 8);
+            if (code != HUFFMAN_ESCAPE) {
+                retval = Encode(code, T1EHuff);
+            } else {
+                retval = 0;
+            }
+            if (!retval) {
+                Encode(HUFFMAN_ESCAPE, T1EHuff);
+                fputv(6, r);
+                fputv(8, l);
+            } else {
+                if (l < 0) {
+                    fputb(1);
+                } else {
+                    fputb(0);
+                }
+            }
+            r = 0;
+            NumberNZ++;
+        }
     }
-  CodedBlockBits+=(swtell()-Start);
-  EOBBits+=Encode(0,T1EHuff);
+    CodedBlockBits += (swtell() - Start);
+    EOBBits += Encode(0, T1EHuff);
 }
 
 /*BFUNC
@@ -212,39 +215,42 @@ initialized to a value at least as large as 64.
 
 EFUNC*/
 
-void DecodeAC(index,matrix)
-     int index;
-     int *matrix;
+void DecodeAC(index, matrix) int index;
+int* matrix;
 {
-  BEGIN("DecodeAC");
-  int k,r,l;
-  int *mptr;
+    BEGIN("DecodeAC");
+    int k, r, l;
+    int* mptr;
 
-  for(mptr=matrix+index;mptr<matrix+BLOCKSIZE;mptr++) {*mptr = 0;}
-  for(k=index;k<BLOCKSIZE;)  /* JPEG Mistake */
-    {
-      r = Decode(T1DHuff);
-      if (!r) {return;} /*Eof*/
-      if (r == HUFFMAN_ESCAPE)
-	{
-	  r = fgetv(6);
-	  l = fgetv(8);
-	}
-      else
-	{
-	  l = r & 0xff;
-	  r = r >> 8;
-	  if (fgetb()) {l = -l;}
-	}
-      if (l & bit_set_mask[7]) {l |= extend_mask[7];}
-      k += r;
-      matrix[k++] = l;
-      NumberNZ++;
+    for (mptr = matrix + index; mptr < matrix + BLOCKSIZE; mptr++) {
+        *mptr = 0;
     }
-  if (r=Decode(T1DHuff))
+    for (k = index; k < BLOCKSIZE;) /* JPEG Mistake */
     {
-      WHEREAMI();
-      printf("EOB expected, found 0x%x.\n",r);
+        r = Decode(T1DHuff);
+        if (!r) {
+            return;
+        } /*Eof*/
+        if (r == HUFFMAN_ESCAPE) {
+            r = fgetv(6);
+            l = fgetv(8);
+        } else {
+            l = r & 0xff;
+            r = r >> 8;
+            if (fgetb()) {
+                l = -l;
+            }
+        }
+        if (l & bit_set_mask[7]) {
+            l |= extend_mask[7];
+        }
+        k += r;
+        matrix[k++] = l;
+        NumberNZ++;
+    }
+    if (r = Decode(T1DHuff)) {
+        WHEREAMI();
+        printf("EOB expected, found 0x%x.\n", r);
     }
 }
 
@@ -257,66 +263,65 @@ already be defined to be greater than 64 elements of int.
 
 EFUNC*/
 
-void CBPDecodeAC(index,matrix)
-     int index;
-     int *matrix;
+void CBPDecodeAC(index, matrix) int index;
+int* matrix;
 {
-  BEGIN("CBPDecodeAC");
-  int k,r,l;
-  int *mptr;
+    BEGIN("CBPDecodeAC");
+    int k, r, l;
+    int* mptr;
 
-  for(mptr=matrix+index;mptr<matrix+BLOCKSIZE;mptr++) {*mptr = 0;}
-  k = index;
-  r = Decode(T2DHuff);
-  if (!r)
-    {
-      WHEREAMI();
-      printf("Bad EOF in CBP block.\n");
-      return;
+    for (mptr = matrix + index; mptr < matrix + BLOCKSIZE; mptr++) {
+        *mptr = 0;
     }
-  if (r==HUFFMAN_ESCAPE)
-    {
-      r = fgetv(6);
-      l = fgetv(8);
+    k = index;
+    r = Decode(T2DHuff);
+    if (!r) {
+        WHEREAMI();
+        printf("Bad EOF in CBP block.\n");
+        return;
     }
-  else
-    {
-      l = r & 0xff;
-      r = r >> 8;
-      if (fgetb()) {l = -l;}
+    if (r == HUFFMAN_ESCAPE) {
+        r = fgetv(6);
+        l = fgetv(8);
+    } else {
+        l = r & 0xff;
+        r = r >> 8;
+        if (fgetb()) {
+            l = -l;
+        }
     }
-  if (l & bit_set_mask[7])
-    {
-      l |= extend_mask[7];
+    if (l & bit_set_mask[7]) {
+        l |= extend_mask[7];
     }
-  k += r;
-  matrix[k++] = l;
-  NumberNZ++;
-  while(k<BLOCKSIZE)
-    {
-      r = Decode(T1DHuff);
-      if (!r) {return;} /*Eof*/
-      if (r == HUFFMAN_ESCAPE)
-	{
-	  r = fgetv(6);
-	  l = fgetv(8);
-	}
-      else
-	{
-	  l = r & 0xff;
-	  r = r >> 8;
-	  if (fgetb())  {l = -l;}
-	}
-      if (l & bit_set_mask[7]) {l |= extend_mask[7];}
-      k += r;
-      matrix[k++] = l;
-      NumberNZ++;
+    k += r;
+    matrix[k++] = l;
+    NumberNZ++;
+    while (k < BLOCKSIZE) {
+        r = Decode(T1DHuff);
+        if (!r) {
+            return;
+        } /*Eof*/
+        if (r == HUFFMAN_ESCAPE) {
+            r = fgetv(6);
+            l = fgetv(8);
+        } else {
+            l = r & 0xff;
+            r = r >> 8;
+            if (fgetb()) {
+                l = -l;
+            }
+        }
+        if (l & bit_set_mask[7]) {
+            l |= extend_mask[7];
+        }
+        k += r;
+        matrix[k++] = l;
+        NumberNZ++;
     }
-  if (r=Decode(T1DHuff))
-    {
-      WHEREAMI();
-      printf("EOB expected, found 0x%x.\n",r);
-      printf("at run length k=%d\n",k);
+    if (r = Decode(T1DHuff)) {
+        WHEREAMI();
+        printf("EOB expected, found 0x%x.\n", r);
+        printf("at run length k=%d\n", k);
     }
 }
 
@@ -328,13 +333,17 @@ EFUNC*/
 
 int DecodeDC()
 {
-  BEGIN("DecodeDC");
-  int l;
+    BEGIN("DecodeDC");
+    int l;
 
-  l = fgetv(8);
-  if (l==255) {l=128;}
-  if (l!=1){NumberNZ++;}
-  return(l);
+    l = fgetv(8);
+    if (l == 255) {
+        l = 128;
+    }
+    if (l != 1) {
+        NumberNZ++;
+    }
+    return (l);
 }
 
 /*BFUNC
@@ -343,15 +352,22 @@ EncodeDC() encodes the coefficient input into the output stream.
 
 EFUNC*/
 
-void EncodeDC(coef)
-     int coef;
+void EncodeDC(coef) int coef;
 {
-  if (coef > 254) {coef=254;}
-  if (coef < 1) {coef=1;}
-  if (coef!=1) {NumberNZ++;}
-  if (coef==128) {coef=255;}
-  fputv(8,coef);
-  CodedBlockBits+=8;
+    if (coef > 254) {
+        coef = 254;
+    }
+    if (coef < 1) {
+        coef = 1;
+    }
+    if (coef != 1) {
+        NumberNZ++;
+    }
+    if (coef == 128) {
+        coef = 255;
+    }
+    fputv(8, coef);
+    CodedBlockBits += 8;
 }
 
 /*END*/

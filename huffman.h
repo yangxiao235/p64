@@ -29,17 +29,16 @@ Huffman stuff...
 
 DHUFF
 {
-  int NumberStates;
-  int state[512];
+    int NumberStates;
+    int state[512];
 };
 
 EHUFF
 {
-  int n;
-  int *Hlen;
-  int *Hcode;
+    int n;
+    int* Hlen;
+    int* Hcode;
 };
 
-EHUFF *MakeEHUFF();
-DHUFF *MakeDHUFF();
-
+EHUFF* MakeEHUFF();
+DHUFF* MakeDHUFF();

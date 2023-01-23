@@ -23,8 +23,7 @@ Some stream definitions.
 ************************************************************
 */
 
-
-#define sputc(b) mputv(8,b)
+#define sputc(b) mputv(8, b)
 #define sgetc() mgetv(8)
 
 extern int bit_set_mask[];

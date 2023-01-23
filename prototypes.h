@@ -24,7 +24,6 @@ This file contains the functional prototypes for type checking.
 ************************************************************
 */
 
-
 /* p64.c */
 
 extern void p64EncodeSequence();
@@ -116,7 +115,7 @@ extern void initmc();
 extern void FastBME();
 extern void BruteMotionEstimation();
 extern void BMC();
-extern MEM *MotionCompensation();
+extern MEM* MotionCompensation();
 
 /* mem.c */
 
@@ -126,10 +125,10 @@ extern void CopyMem();
 extern ClearMem();
 extern int ParityMem();
 extern void SetPointerBlock();
-extern MEM *MakeMem();
+extern MEM* MakeMem();
 extern void FreeMem();
-extern MEM *LoadMem();
-extern MEM *SaveMem();
+extern MEM* LoadMem();
+extern MEM* SaveMem();
 
 /* stat.c */
 

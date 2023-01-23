@@ -27,9 +27,9 @@ This file handles all of the bit-level stream commands.
 
 /*LABEL stream.c */
 
-#include <stdlib.h>
-#include <stdio.h>
 #include "globals.h"
+#include <stdio.h>
+#include <stdlib.h>
 
 /*PUBLIC*/
 
@@ -50,30 +50,41 @@ extern int seof();
 
 extern int ErrorValue;
 
-static FILE *swout;
-static FILE *srin;
+static FILE* swout;
+static FILE* srin;
 static int current_write_byte;
 static int current_read_byte;
 static int read_position;
 static int write_position;
 
-int bit_set_mask[] =
-{0x00000001,0x00000002,0x00000004,0x00000008,
-0x00000010,0x00000020,0x00000040,0x00000080,
-0x00000100,0x00000200,0x00000400,0x00000800,
-0x00001000,0x00002000,0x00004000,0x00008000,
-0x00010000,0x00020000,0x00040000,0x00080000,
-0x00100000,0x00200000,0x00400000,0x00800000,
-0x01000000,0x02000000,0x04000000,0x08000000,
-0x10000000,0x20000000,0x40000000,0x80000000};
+int bit_set_mask[] = { 0x00000001, 0x00000002, 0x00000004, 0x00000008,
+    0x00000010, 0x00000020, 0x00000040, 0x00000080,
+    0x00000100, 0x00000200, 0x00000400, 0x00000800,
+    0x00001000, 0x00002000, 0x00004000, 0x00008000,
+    0x00010000, 0x00020000, 0x00040000, 0x00080000,
+    0x00100000, 0x00200000, 0x00400000, 0x00800000,
+    0x01000000, 0x02000000, 0x04000000, 0x08000000,
+    0x10000000, 0x20000000, 0x40000000, 0x80000000 };
 
-#define mput1()\
-{current_write_byte|=bit_set_mask[write_position--];\
- if (write_position<0) {putc(current_write_byte,swout); write_position=7;current_write_byte=0;}}
+#define mput1()                                               \
+    {                                                         \
+        current_write_byte |= bit_set_mask[write_position--]; \
+        if (write_position < 0) {                             \
+            putc(current_write_byte, swout);                  \
+            write_position = 7;                               \
+            current_write_byte = 0;                           \
+        }                                                     \
+    }
 
-#define mput0()\
-{write_position--;if(write_position<0){putc(current_write_byte,swout);write_position=7;current_write_byte=0;}}
-
+#define mput0()                              \
+    {                                        \
+        write_position--;                    \
+        if (write_position < 0) {            \
+            putc(current_write_byte, swout); \
+            write_position = 7;              \
+            current_write_byte = 0;          \
+        }                                    \
+    }
 
 /*START*/
 
@@ -83,17 +94,15 @@ mropen() opens up the stream for reading on a bit level.
 
 EFUNC*/
 
-void mropen(filename)
-     char *filename;
+void mropen(filename) char* filename;
 {
-  BEGIN("mropen");
+    BEGIN("mropen");
 
-  current_read_byte=0;
-  read_position = -1;
-  if ((srin = fopen(filename,"rb")) == NULL)
-    {
-      fprintf(stderr,"Cannot Read Input File\n");
-      exit(ERROR_INIT_FILE);
+    current_read_byte = 0;
+    read_position = -1;
+    if ((srin = fopen(filename, "rb")) == NULL) {
+        fprintf(stderr, "Cannot Read Input File\n");
+        exit(ERROR_INIT_FILE);
     }
 }
 
@@ -105,9 +114,9 @@ EFUNC*/
 
 void mrclose()
 {
-  BEGIN("mrclose");
+    BEGIN("mrclose");
 
-  fclose(srin);
+    fclose(srin);
 }
 
 /*BFUNC
@@ -116,21 +125,18 @@ mwopen() opens a bit stream for writing.
 
 EFUNC*/
 
-void mwopen(filename)
-     char *filename;
+void mwopen(filename) char* filename;
 {
-  BEGIN("mwopen");
+    BEGIN("mwopen");
 
-  current_write_byte=0;
-  write_position=7;
-  if ((swout = fopen(filename,"w+b")) == NULL)
-    {
-      WHEREAMI();
-      printf("Cannot Open Output File\n");
-      exit(ERROR_INIT_FILE);
+    current_write_byte = 0;
+    write_position = 7;
+    if ((swout = fopen(filename, "w+b")) == NULL) {
+        WHEREAMI();
+        printf("Cannot Open Output File\n");
+        exit(ERROR_INIT_FILE);
     }
 }
-
 
 /*BFUNC
 
@@ -141,13 +147,12 @@ EFUNC*/
 
 void mwclose()
 {
-  BEGIN("mwclose");
+    BEGIN("mwclose");
 
-  while(write_position!=7)
-    {
-      mput1();
+    while (write_position != 7) {
+        mput1();
     }
-  fclose(swout);
+    fclose(swout);
 }
 
 /*BFUNC
@@ -156,13 +161,15 @@ mputb() puts a bit to the write stream.
 
 EFUNC*/
 
-void mputb(b)
-     int b;
+void mputb(b) int b;
 {
-  BEGIN("mputb");
+    BEGIN("mputb");
 
-  if (b) {mput1();}
-  else {mput0();}
+    if (b) {
+        mput1();
+    } else {
+        mput0();
+    }
 }
 
 /*BFUNC
@@ -173,15 +180,16 @@ EFUNC*/
 
 int mgetb()
 {
-  BEGIN("mgetb");
+    BEGIN("mgetb");
 
-  if (read_position<0)
-    {
-      current_read_byte=getc(srin);
-      read_position = 7;
+    if (read_position < 0) {
+        current_read_byte = getc(srin);
+        read_position = 7;
     }
-  if (current_read_byte&bit_set_mask[read_position--]) {return(1);}
-  return(0);
+    if (current_read_byte & bit_set_mask[read_position--]) {
+        return (1);
+    }
+    return (0);
 }
 
 /*BFUNC
@@ -190,16 +198,17 @@ mputv() puts a n bits to the stream from byte b.
 
 EFUNC*/
 
-void mputv(n,b)
-     int n;
-     int b;
+void mputv(n, b) int n;
+int b;
 {
-  BEGIN("mputv");
+    BEGIN("mputv");
 
-  while(n--)
-    {
-      if(b&bit_set_mask[n]) {mput1();}
-      else {mput0();}
+    while (n--) {
+        if (b & bit_set_mask[n]) {
+            mput1();
+        } else {
+            mput0();
+        }
     }
 }
 
@@ -209,20 +218,19 @@ mgetv() returns n bits read off of the read stream.
 
 EFUNC*/
 
-int mgetv(n)
-     int n;
+int mgetv(n) int n;
 {
-  BEGIN("mgetv");
-  int b=0;
+    BEGIN("mgetv");
+    int b = 0;
 
-  while(n--)
-    {
-      b <<= 1;
-      if (mgetb()) {b |= 1;}
+    while (n--) {
+        b <<= 1;
+        if (mgetb()) {
+            b |= 1;
+        }
     }
-  return(b);
+    return (b);
 }
-
 
 /*BFUNC
 
@@ -232,9 +240,9 @@ EFUNC*/
 
 long mwtell()
 {
-  BEGIN("mwtell");
+    BEGIN("mwtell");
 
-  return((ftell(swout)<<3) + (7 - write_position));
+    return ((ftell(swout) << 3) + (7 - write_position));
 }
 
 /*BFUNC
@@ -245,9 +253,9 @@ EFUNC*/
 
 long mrtell()
 {
-  BEGIN("mrtell");
+    BEGIN("mrtell");
 
-  return((ftell(srin)<<3) - (read_position+1));
+    return ((ftell(srin) << 3) - (read_position + 1));
 }
 
 /*BFUNC
@@ -256,29 +264,27 @@ mwseek() seeks to a specific bit position on the write stream.
 
 EFUNC*/
 
-void mwseek(distance)
-     long distance;
+void mwseek(distance) long distance;
 {
-  BEGIN("mwseek");
-  int Length;
+    BEGIN("mwseek");
+    int Length;
 
-  if (write_position != 7) {putc(current_write_byte,swout);}
-  fseek(swout,0,2L);
-  Length = ftell(swout);
-  fseek(swout,(distance+7)>>3,0L);
-  if ((Length << 3) <= distance) /* Make sure we read clean stuff */
-    {
-      current_write_byte = 0;
-      write_position = 7 - (distance & 0x7);
+    if (write_position != 7) {
+        putc(current_write_byte, swout);
     }
-  else
+    fseek(swout, 0, 2L);
+    Length = ftell(swout);
+    fseek(swout, (distance + 7) >> 3, 0L);
+    if ((Length << 3) <= distance) /* Make sure we read clean stuff */
     {
-      current_write_byte = getc(swout);
-      write_position = 7 - (distance & 0x7);
-      fseek(swout,(distance+7)>>3,0L);
+        current_write_byte = 0;
+        write_position = 7 - (distance & 0x7);
+    } else {
+        current_write_byte = getc(swout);
+        write_position = 7 - (distance & 0x7);
+        fseek(swout, (distance + 7) >> 3, 0L);
     }
 }
-
 
 /*BFUNC
 
@@ -286,16 +292,14 @@ mrseek() seeks to a specific bit position on the read stream.
 
 EFUNC*/
 
-void mrseek(distance)
-     long distance;
+void mrseek(distance) long distance;
 {
-  BEGIN("mrseek");
+    BEGIN("mrseek");
 
-  fseek(srin,distance>>3,0L);
-  current_read_byte = getc(srin);
-  read_position = 7 - (distance % 8);
+    fseek(srin, distance >> 3, 0L);
+    current_read_byte = getc(srin);
+    read_position = 7 - (distance % 8);
 }
-
 
 /*BFUNC
 
@@ -306,10 +310,9 @@ EFUNC*/
 
 int seof()
 {
-  BEGIN("seof");
+    BEGIN("seof");
 
-  return(feof(srin));
+    return (feof(srin));
 }
 
 /*END*/
-

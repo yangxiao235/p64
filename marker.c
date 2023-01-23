@@ -26,9 +26,9 @@ This file contains most of the marker information.
 
 /*LABEL marker.c */
 
-#include <stdlib.h>
-#include "globals.h"
 #include "marker.h"
+#include "globals.h"
+#include <stdlib.h>
 
 /*PUBLIC*/
 
@@ -71,26 +71,25 @@ extern int QuantMType[];
 extern int CBPMType[];
 extern int MFMType[];
 
-
-extern FSTORE *CFS;
+extern FSTORE* CFS;
 
 extern int bit_set_mask[];
 extern int extend_mask[];
 
-extern DHUFF *MBADHuff;
-extern DHUFF *MVDDHuff;
-extern DHUFF *CBPDHuff;
-extern DHUFF *T3DHuff;
+extern DHUFF* MBADHuff;
+extern DHUFF* MVDDHuff;
+extern DHUFF* CBPDHuff;
+extern DHUFF* T3DHuff;
 
-extern EHUFF *MBAEHuff;
-extern EHUFF *MVDEHuff;
-extern EHUFF *CBPEHuff;
-extern EHUFF *T3EHuff;
+extern EHUFF* MBAEHuff;
+extern EHUFF* MVDEHuff;
+extern EHUFF* CBPEHuff;
+extern EHUFF* T3EHuff;
 
 extern int NumberBitsCoded;
 
-int MacroAttributeBits=0;
-int MotionVectorBits=0;
+int MacroAttributeBits = 0;
+int MotionVectorBits = 0;
 
 /*START*/
 /*BFUNC
@@ -102,34 +101,29 @@ EFUNC*/
 
 void WritePictureHeader()
 {
-  BEGIN("WritePictureHeader");
+    BEGIN("WritePictureHeader");
 
-  mputv(PSC_LENGTH,PSC);
-  mputv(5,TemporalReference);
+    mputv(PSC_LENGTH, PSC);
+    mputv(5, TemporalReference);
 #ifdef VERSION_1_0
-  mputv(13,PType);
-  if (ParityEnable)
-    {
-      mputb(1);
-      mputv(8,ParityFS(CFS));
-    }
-  else
-    mputb(0);  /* No Parity */
-  if (PSpareEnable)
-    {
-      mputb(1);
-      mputv(16,PSpare);
-    }
-  else
-    mputb(0);  /* No Spare */
+    mputv(13, PType);
+    if (ParityEnable) {
+        mputb(1);
+        mputv(8, ParityFS(CFS));
+    } else
+        mputb(0); /* No Parity */
+    if (PSpareEnable) {
+        mputb(1);
+        mputv(16, PSpare);
+    } else
+        mputb(0); /* No Spare */
 #else
-  mputv(6,PType);
-  if (PSpareEnable)
-    {
-      mputb(1);
-      mputv(8,PSpare);
+    mputv(6, PType);
+    if (PSpareEnable) {
+        mputb(1);
+        mputv(8, PSpare);
     }
-  mputb(0);  /* No Spare */
+    mputb(0); /* No Spare */
 #endif
 }
 
@@ -143,32 +137,27 @@ EFUNC*/
 
 void ReadPictureHeader()
 {
-  BEGIN("ReadPictureHeader");
+    BEGIN("ReadPictureHeader");
 
-  TemporalReference = mgetv(5);
+    TemporalReference = mgetv(5);
 
 #ifdef VERSION_1_0
-  PType = mgetv(13);
-  if (mgetb())
-    {
-      ParityEnable = 1;
-      Parity = mgetv(8);
-    }
-  else
-    ParityEnable = 0;
-  if (mgetb())
-    {
-      PSpareEnable=1;
-      PSpare = mgetv(16);
-    }
-  else
-    PSpareEnable = 0;
+    PType = mgetv(13);
+    if (mgetb()) {
+        ParityEnable = 1;
+        Parity = mgetv(8);
+    } else
+        ParityEnable = 0;
+    if (mgetb()) {
+        PSpareEnable = 1;
+        PSpare = mgetv(16);
+    } else
+        PSpareEnable = 0;
 #else
-  PType = mgetv(6);
-  for(PSpareEnable = 0;mgetb();)
-    {
-      PSpareEnable=1;
-      PSpare = mgetv(8);
+    PType = mgetv(6);
+    for (PSpareEnable = 0; mgetb();) {
+        PSpareEnable = 1;
+        PSpare = mgetv(8);
     }
 #endif
 }
@@ -181,29 +170,26 @@ EFUNC*/
 
 void WriteGOBHeader()
 {
-  BEGIN("WriteGOBHeader");
+    BEGIN("WriteGOBHeader");
 
-  mputv(GBSC_LENGTH,GBSC);
-  mputv(4,GRead+1);
+    mputv(GBSC_LENGTH, GBSC);
+    mputv(4, GRead + 1);
 #ifdef VERSION_1_0
-  mputv(6,Type2);
+    mputv(6, Type2);
 #endif
-  mputv(5,GQuant);
+    mputv(5, GQuant);
 #ifdef VERSION_1_0
-  if (GSpareEnable)
-    {
-      mputb(1);
-      mputv(16,GSpare);
-    }
-  else
-    mputb(0);
+    if (GSpareEnable) {
+        mputb(1);
+        mputv(16, GSpare);
+    } else
+        mputb(0);
 #else
-  if (GSpareEnable)
-    {
-      mputb(1);
-      mputv(8,GSpare);
+    if (GSpareEnable) {
+        mputb(1);
+        mputv(8, GSpare);
     }
-  mputb(0);
+    mputb(0);
 #endif
 }
 
@@ -216,9 +202,9 @@ EFUNC*/
 
 void ReadHeaderTrailer()
 {
-  BEGIN("ReadHeaderTrailer");
+    BEGIN("ReadHeaderTrailer");
 
-  GRead = mgetv(4)-1;
+    GRead = mgetv(4) - 1;
 }
 
 /*BFUNC
@@ -230,21 +216,18 @@ EFUNC*/
 
 int ReadHeaderHeader()
 {
-  BEGIN("ReadHeaderHeader");
-  int input;
+    BEGIN("ReadHeaderHeader");
+    int input;
 
-  if ((input = mgetv(GBSC_LENGTH)) != GBSC)
-    {
-      if (seof()==0)
-	{
-	  WHEREAMI();
-	  printf("Illegal GOB Start Code. Read: %d\n",input);
-	}
-      return(-1);
+    if ((input = mgetv(GBSC_LENGTH)) != GBSC) {
+        if (seof() == 0) {
+            WHEREAMI();
+            printf("Illegal GOB Start Code. Read: %d\n", input);
+        }
+        return (-1);
     }
-  return(0);
+    return (0);
 }
-
 
 /*BFUNC
 
@@ -256,25 +239,22 @@ EFUNC*/
 
 void ReadGOBHeader()
 {
-  BEGIN("ReadGOBHeader");
+    BEGIN("ReadGOBHeader");
 
 #ifdef VERSION_1_0
-  Type2 = mgetv(6);
+    Type2 = mgetv(6);
 #endif
-  GQuant = mgetv(5);
+    GQuant = mgetv(5);
 #ifdef VERSION_1_0
-  if (mgetb())
-    {
-      GSpareEnable = 1;
-      GSpare = mgetv(16);
-    }
-  else
-    GSpareEnable=0;
+    if (mgetb()) {
+        GSpareEnable = 1;
+        GSpare = mgetv(16);
+    } else
+        GSpareEnable = 0;
 #else
-  for(GSpareEnable=0;mgetb();)
-    {
-      GSpareEnable = 1;
-      GSpare = mgetv(8);
+    for (GSpareEnable = 0; mgetb();) {
+        GSpareEnable = 1;
+        GSpare = mgetv(8);
     }
 #endif
 }
@@ -287,71 +267,61 @@ EFUNC*/
 
 void WriteMBHeader()
 {
-  BEGIN("WriteMBHeader");
-  int TempH,TempV,Start;
-  
-  Start=swtell();
-  if (!Encode(MBA,MBAEHuff))
-    {
-      WHEREAMI();
-      printf("Attempting to write an empty Huffman code.\n");
-      exit(ERROR_HUFFMAN_ENCODE);
-    }
-  if (!Encode(MType,T3EHuff))
-    {
-      WHEREAMI();
-      printf("Attempting to write an empty Huffman code.\n");
-      exit(ERROR_HUFFMAN_ENCODE);
-    }
-  if (QuantMType[MType])
-    mputv(5,MQuant);
+    BEGIN("WriteMBHeader");
+    int TempH, TempV, Start;
 
-  NumberBitsCoded=0;
-  if (MFMType[MType])
-    {
-      if ((!MFMType[LastMType])||(MBA!=1)||
-	  (LastMBA==-1)||(LastMBA==10)||(LastMBA==21))
-	{
-	  if (!Encode(MVDH&0x1f,MVDEHuff)||
-	       !Encode(MVDV&0x1f,MVDEHuff))
-	    {
-	      WHEREAMI();
-	      printf("Cannot encode motion vectors.\n");
-	    }
-	}
-      else
-	{
-	  TempH = MVDH - LastMVDH;
-	  if (TempH < -16) TempH += 32;
-	  if (TempH > 15) TempH -= 32;
-	  TempV = MVDV - LastMVDV;
-	  if (TempV < -16) TempV += 32;
-	  if (TempV > 15) TempV -= 32;
-	  if (!Encode(TempH&0x1f,MVDEHuff)||!Encode(TempV&0x1f,MVDEHuff))
-	    {
-	      WHEREAMI();
-	      printf("Cannot encode motion vectors.\n");
-	    }
-	}
-      LastMVDV = MVDV;
-      LastMVDH = MVDH;
+    Start = swtell();
+    if (!Encode(MBA, MBAEHuff)) {
+        WHEREAMI();
+        printf("Attempting to write an empty Huffman code.\n");
+        exit(ERROR_HUFFMAN_ENCODE);
     }
-  else
-    {
-      LastMVDV=LastMVDH=MVDV=MVDH=0; /* Redundant in most cases */
+    if (!Encode(MType, T3EHuff)) {
+        WHEREAMI();
+        printf("Attempting to write an empty Huffman code.\n");
+        exit(ERROR_HUFFMAN_ENCODE);
+    }
+    if (QuantMType[MType])
+        mputv(5, MQuant);
+
+    NumberBitsCoded = 0;
+    if (MFMType[MType]) {
+        if ((!MFMType[LastMType]) || (MBA != 1) || (LastMBA == -1) || (LastMBA == 10) || (LastMBA == 21)) {
+            if (!Encode(MVDH & 0x1f, MVDEHuff) || !Encode(MVDV & 0x1f, MVDEHuff)) {
+                WHEREAMI();
+                printf("Cannot encode motion vectors.\n");
+            }
+        } else {
+            TempH = MVDH - LastMVDH;
+            if (TempH < -16)
+                TempH += 32;
+            if (TempH > 15)
+                TempH -= 32;
+            TempV = MVDV - LastMVDV;
+            if (TempV < -16)
+                TempV += 32;
+            if (TempV > 15)
+                TempV -= 32;
+            if (!Encode(TempH & 0x1f, MVDEHuff) || !Encode(TempV & 0x1f, MVDEHuff)) {
+                WHEREAMI();
+                printf("Cannot encode motion vectors.\n");
+            }
+        }
+        LastMVDV = MVDV;
+        LastMVDH = MVDH;
+    } else {
+        LastMVDV = LastMVDH = MVDV = MVDH = 0; /* Redundant in most cases */
     }
 
-  MotionVectorBits+=NumberBitsCoded;
-  if (CBPMType[MType])
-    {
-      if (!Encode(CBP,CBPEHuff))
-	{
-	  WHEREAMI();
-	  printf("CBP write error\n");
-	  exit(-1);
-	}
+    MotionVectorBits += NumberBitsCoded;
+    if (CBPMType[MType]) {
+        if (!Encode(CBP, CBPEHuff)) {
+            WHEREAMI();
+            printf("CBP write error\n");
+            exit(-1);
+        }
     }
-  MacroAttributeBits+=(swtell()-Start);
+    MacroAttributeBits += (swtell() - Start);
 }
 
 /*BFUNC
@@ -362,57 +332,53 @@ EFUNC*/
 
 int ReadMBHeader()
 {
-  BEGIN("ReadMBHeader");
-  int ReadMVDH,ReadMVDV;
+    BEGIN("ReadMBHeader");
+    int ReadMVDH, ReadMVDV;
 
-  do
-    {
-      MBA = Decode(MBADHuff);
-    }
-  while(MBA == 34);  /* Get rid of stuff bits */
-  if (MBA == 35) return(-1); /* Start of Picture Headers */
+    do {
+        MBA = Decode(MBADHuff);
+    } while (MBA == 34); /* Get rid of stuff bits */
+    if (MBA == 35)
+        return (-1); /* Start of Picture Headers */
 
-  LastMType = MType;
-  MType = Decode(T3DHuff);
-  if (QuantMType[MType])
-    MQuant = mgetv(5);
-  if (MFMType[MType])
-    {
-      if ((!MFMType[LastMType])||(MBA!=1)||
-	  (LastMBA==-1)||(LastMBA==10)||(LastMBA==21))
-	  {
-	    MVDH = Decode(MVDDHuff);
-	    if (MVDH & bit_set_mask[4])
-	      MVDH |= extend_mask[4];
-	    MVDV = Decode(MVDDHuff);
-	    if (MVDV & bit_set_mask[4])
-	      MVDV |= extend_mask[4];
-	  }
-      else
-	{
-	  ReadMVDH = Decode(MVDDHuff);
-	  if (ReadMVDH & bit_set_mask[4])
-	    ReadMVDH |= extend_mask[4];
-	  MVDH += ReadMVDH;
-	  
-	  ReadMVDV = Decode(MVDDHuff);
-	  if (ReadMVDV & bit_set_mask[4])
-	    ReadMVDV |= extend_mask[4];
-	  MVDV += ReadMVDV;
+    LastMType = MType;
+    MType = Decode(T3DHuff);
+    if (QuantMType[MType])
+        MQuant = mgetv(5);
+    if (MFMType[MType]) {
+        if ((!MFMType[LastMType]) || (MBA != 1) || (LastMBA == -1) || (LastMBA == 10) || (LastMBA == 21)) {
+            MVDH = Decode(MVDDHuff);
+            if (MVDH & bit_set_mask[4])
+                MVDH |= extend_mask[4];
+            MVDV = Decode(MVDDHuff);
+            if (MVDV & bit_set_mask[4])
+                MVDV |= extend_mask[4];
+        } else {
+            ReadMVDH = Decode(MVDDHuff);
+            if (ReadMVDH & bit_set_mask[4])
+                ReadMVDH |= extend_mask[4];
+            MVDH += ReadMVDH;
 
-	  if (MVDH < -16) MVDH += 32;
-	  if (MVDH > 15) MVDH -= 32;
-	  if (MVDV < -16) MVDV += 32;
-	  if (MVDV > 15) MVDV -= 32;
-	}
+            ReadMVDV = Decode(MVDDHuff);
+            if (ReadMVDV & bit_set_mask[4])
+                ReadMVDV |= extend_mask[4];
+            MVDV += ReadMVDV;
+
+            if (MVDH < -16)
+                MVDH += 32;
+            if (MVDH > 15)
+                MVDH -= 32;
+            if (MVDV < -16)
+                MVDV += 32;
+            if (MVDV > 15)
+                MVDV -= 32;
+        }
+    } else {
+        MVDV = MVDH = 0; /* Theoretically redundant */
     }
-  else
-    {
-      MVDV=MVDH=0;  /* Theoretically redundant */
-    }
-  if (CBPMType[MType])
-    CBP = Decode(CBPDHuff);
-  return(0);
+    if (CBPMType[MType])
+        CBP = Decode(CBPDHuff);
+    return (0);
 }
 
 /*END*/

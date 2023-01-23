@@ -27,18 +27,18 @@ Generic definitions globally known.
 #ifndef GLOBAL_DONE
 #define GLOBAL_DONE
 
-#include <stdio.h>
+#include "huffman.h"
 #include "mem.h"
 #include "system.h"
-#include "huffman.h"
+#include <stdio.h>
 
 #define BLOCKSIZE 64
 #define BLOCKWIDTH 8
 #define BLOCKHEIGHT 8
 
-#define MAXIMUM_SOURCES 3   /* Should be 3 */
-#define UMASK 0666  /* Octal */
-#define BUFFERSIZE 256 
+#define MAXIMUM_SOURCES 3 /* Should be 3 */
+#define UMASK 0666 /* Octal */
+#define BUFFERSIZE 256
 
 #define sropen mropen
 #define srclose mrclose
@@ -62,7 +62,6 @@ Generic definitions globally known.
 
 #define P_DECODER 1
 
-
 /* Image types */
 
 #define IT_NTSC 0
@@ -85,7 +84,6 @@ Generic definitions globally known.
 
 /* Memory locations */
 
-
 #define L_GQUANT 1
 #define L_MQUANT 2
 #define L_MQUANTENABLE 3
@@ -102,76 +100,95 @@ Generic definitions globally known.
 #define L_QOFFS 14
 
 #define ERROR_NONE 0
-#define ERROR_BOUNDS 1            /*Input Values out of bounds */
-#define ERROR_HUFFMAN_READ 2      /*Huffman Decoder finds bad code */
-#define ERROR_HUFFMAN_ENCODE 3    /*Undefined value in encoder */
-#define ERROR_MARKER 4            /*Error Found in Marker */
-#define ERROR_INIT_FILE 5         /*Cannot initialize files */
-#define ERROR_UNRECOVERABLE 6     /*No recovery mode specified */
-#define ERROR_PREMATURE_EOF 7     /*End of file unexpected */
-#define ERROR_MARKER_STRUCTURE 8  /*Bad Marker Structure */
-#define ERROR_WRITE 9             /*Cannot write output */
-#define ERROR_READ 10             /*Cannot write input */
-#define ERROR_PARAMETER 11        /*System Parameter Error */
-#define ERROR_MEMORY 12           /*Memory allocation failure */
+#define ERROR_BOUNDS 1 /*Input Values out of bounds */
+#define ERROR_HUFFMAN_READ 2 /*Huffman Decoder finds bad code */
+#define ERROR_HUFFMAN_ENCODE 3 /*Undefined value in encoder */
+#define ERROR_MARKER 4 /*Error Found in Marker */
+#define ERROR_INIT_FILE 5 /*Cannot initialize files */
+#define ERROR_UNRECOVERABLE 6 /*No recovery mode specified */
+#define ERROR_PREMATURE_EOF 7 /*End of file unexpected */
+#define ERROR_MARKER_STRUCTURE 8 /*Bad Marker Structure */
+#define ERROR_WRITE 9 /*Cannot write output */
+#define ERROR_READ 10 /*Cannot write input */
+#define ERROR_PARAMETER 11 /*System Parameter Error */
+#define ERROR_MEMORY 12 /*Memory allocation failure */
 
 typedef int iFunc();
 typedef void vFunc();
 
-#define GetFlag(value,flag) (((value) & (flag)) ? 1:0)
+#define GetFlag(value, flag) (((value) & (flag)) ? 1 : 0)
 
-#define MAX(x,y) ((x > y) ? x:y)
-#define MIN(x,y) ((x > y) ? y:x)
-#define BEGIN(name) static char RoutineName[]= name
-#define WHEREAMI() printf("F>%s:R>%s:L>%d: ",\
-			  __FILE__,RoutineName,__LINE__)
+#define MAX(x, y) ((x > y) ? x : y)
+#define MIN(x, y) ((x > y) ? y : x)
+#define BEGIN(name) static char RoutineName[] = name
+#define WHEREAMI() printf("F>%s:R>%s:L>%d: ", \
+    __FILE__, RoutineName, __LINE__)
 /* InBounds is used to test whether a value is in or out of bounds. */
-#define InBounds(var,lo,hi,str)\
-{if (((var) < (lo)) || ((var) > (hi)))\
-{WHEREAMI(); printf("%s in %d\n",(str),(var));ErrorValue=ERROR_BOUNDS;}}
-#define BoundValue(var,lo,hi,str)\
-{if((var)<(lo)){WHEREAMI();printf("Bounding %s to %d\n",str,lo);var=lo;}\
- else if((var)>(hi)){WHEREAMI();printf("Bounding %s to %d\n",str,hi);var=hi;}}
+#define InBounds(var, lo, hi, str)              \
+    {                                           \
+        if (((var) < (lo)) || ((var) > (hi))) { \
+            WHEREAMI();                         \
+            printf("%s in %d\n", (str), (var)); \
+            ErrorValue = ERROR_BOUNDS;          \
+        }                                       \
+    }
+#define BoundValue(var, lo, hi, str)                \
+    {                                               \
+        if ((var) < (lo)) {                         \
+            WHEREAMI();                             \
+            printf("Bounding %s to %d\n", str, lo); \
+            var = lo;                               \
+        } else if ((var) > (hi)) {                  \
+            WHEREAMI();                             \
+            printf("Bounding %s to %d\n", str, hi); \
+            var = hi;                               \
+        }                                           \
+    }
 
-#define MakeStructure(named_st) ((named_st *) malloc(sizeof(named_st)))
+#define MakeStructure(named_st) ((named_st*)malloc(sizeof(named_st)))
 
-IMAGE {
-char *StreamFileName;
-int p64Mode;
-int Height;
-int Width;
+IMAGE
+{
+    char* StreamFileName;
+    int p64Mode;
+    int Height;
+    int Width;
 };
 
-FRAME {
-int NumberComponents;
-char ComponentFilePrefix[MAXIMUM_SOURCES][200];
-char ComponentFileSuffix[MAXIMUM_SOURCES][200];
-char ComponentFileName[MAXIMUM_SOURCES][200];
-int Height[MAXIMUM_SOURCES];
-int Width[MAXIMUM_SOURCES];
-int hf[MAXIMUM_SOURCES];
-int vf[MAXIMUM_SOURCES];
-IOBUF *Iob[MAXIMUM_SOURCES];
+FRAME
+{
+    int NumberComponents;
+    char ComponentFilePrefix[MAXIMUM_SOURCES][200];
+    char ComponentFileSuffix[MAXIMUM_SOURCES][200];
+    char ComponentFileName[MAXIMUM_SOURCES][200];
+    int Height[MAXIMUM_SOURCES];
+    int Width[MAXIMUM_SOURCES];
+    int hf[MAXIMUM_SOURCES];
+    int vf[MAXIMUM_SOURCES];
+    IOBUF* Iob[MAXIMUM_SOURCES];
 };
 
-FSTORE {
-int NumberComponents;
-IOBUF *fs[MAXIMUM_SOURCES];
+FSTORE
+{
+    int NumberComponents;
+    IOBUF* fs[MAXIMUM_SOURCES];
 };
 
-STAT {
-double mean;
-double mse;
-double mrsnr;
-double snr;
-double psnr;
-double entropy;
+STAT
+{
+    double mean;
+    double mse;
+    double mrsnr;
+    double snr;
+    double psnr;
+    double entropy;
 };
 
-RATE {
-int position;
-int size;
-int baseq;
+RATE
+{
+    int position;
+    int size;
+    int baseq;
 };
 
 #include "prototypes.h"

@@ -26,11 +26,11 @@ This file contains the Huffman routines.
 
 /*LABEL huffman.c */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include "stream.h"
-#include "globals.h"
 #include "ctables.h"
+#include "globals.h"
+#include "stream.h"
+#include <stdio.h>
+#include <stdlib.h>
 
 /*PUBLIC*/
 
@@ -41,8 +41,8 @@ extern void PrintDhuff();
 extern void PrintEhuff();
 extern void PrintTable();
 
-static DHUFF *MakeDhuff();
-static EHUFF *MakeEhuff();
+static DHUFF* MakeDhuff();
+static EHUFF* MakeEhuff();
 static void LoadETable();
 static void LoadDTable();
 static int GetNextState();
@@ -56,39 +56,37 @@ static void AddCode();
 
 /* Actual Tables */
 
-extern IMAGE *CImage;
-extern FRAME *CFrame;
+extern IMAGE* CImage;
+extern FRAME* CFrame;
 extern int Loud;
 extern int ErrorValue;
 
-int NumberBitsCoded=0;
+int NumberBitsCoded = 0;
 
-#define GetLeft(sval,huff) (((huff->state[(sval)]) >> 16)& 0x0000ffff)
-#define GetRight(sval,huff) ((huff->state[(sval)]) & 0xffff)
+#define GetLeft(sval, huff) (((huff->state[(sval)]) >> 16) & 0x0000ffff)
+#define GetRight(sval, huff) ((huff->state[(sval)]) & 0xffff)
 
-#define SetLeft(number,sval,huff) huff->state[(sval)]=\
-  (((huff->state[(sval)]) & 0xffff)|(number<<16));
-#define SetRight(number,sval,huff) huff->state[(sval)]=\
-  (((huff->state[(sval)]) & 0xffff0000)|(number));
+#define SetLeft(number, sval, huff) huff->state[(sval)] = (((huff->state[(sval)]) & 0xffff) | (number << 16));
+#define SetRight(number, sval, huff) huff->state[(sval)] = (((huff->state[(sval)]) & 0xffff0000) | (number));
 
 #define EmptyState 0xffff
 #define Numberp(value) ((value & 0x8000) ? 1 : 0)
 #define MakeHVal(value) (value | 0x8000)
 #define GetHVal(value) (value & 0x7fff)
 
-DHUFF *MBADHuff;
-DHUFF *MVDDHuff;
-DHUFF *CBPDHuff;
-DHUFF *T1DHuff;
-DHUFF *T2DHuff;
-DHUFF *T3DHuff;
+DHUFF* MBADHuff;
+DHUFF* MVDDHuff;
+DHUFF* CBPDHuff;
+DHUFF* T1DHuff;
+DHUFF* T2DHuff;
+DHUFF* T3DHuff;
 
-EHUFF *MBAEHuff;
-EHUFF *MVDEHuff;
-EHUFF *CBPEHuff;
-EHUFF *T1EHuff;
-EHUFF *T2EHuff;
-EHUFF *T3EHuff;
+EHUFF* MBAEHuff;
+EHUFF* MVDEHuff;
+EHUFF* CBPEHuff;
+EHUFF* T1EHuff;
+EHUFF* T2EHuff;
+EHUFF* T3EHuff;
 
 /*START*/
 /*BFUNC
@@ -101,32 +99,32 @@ EFUNC*/
 
 void inithuff()
 {
-  BEGIN("inithuff");
+    BEGIN("inithuff");
 
-  MBADHuff = MakeDhuff();
-  MVDDHuff = MakeDhuff();
-  CBPDHuff = MakeDhuff();
-  T1DHuff = MakeDhuff();
-  T2DHuff = MakeDhuff();
-  T3DHuff = MakeDhuff();
-  MBAEHuff = MakeEhuff(40);
-  MVDEHuff = MakeEhuff(40);
-  CBPEHuff = MakeEhuff(70);
-  T1EHuff = MakeEhuff(8192);
-  T2EHuff = MakeEhuff(8192);
-  T3EHuff = MakeEhuff(20);
-  LoadDTable(MBACoeff,MBADHuff);
-  LoadETable(MBACoeff,MBAEHuff);
-  LoadDTable(MVDCoeff,MVDDHuff);
-  LoadETable(MVDCoeff,MVDEHuff);
-  LoadDTable(CBPCoeff,CBPDHuff);
-  LoadETable(CBPCoeff,CBPEHuff);
-  LoadDTable(TCoeff1,T1DHuff);
-  LoadETable(TCoeff1,T1EHuff);
-  LoadDTable(TCoeff2,T2DHuff);
-  LoadETable(TCoeff2,T2EHuff);
-  LoadDTable(MTypeCoeff,T3DHuff);
-  LoadETable(MTypeCoeff,T3EHuff);
+    MBADHuff = MakeDhuff();
+    MVDDHuff = MakeDhuff();
+    CBPDHuff = MakeDhuff();
+    T1DHuff = MakeDhuff();
+    T2DHuff = MakeDhuff();
+    T3DHuff = MakeDhuff();
+    MBAEHuff = MakeEhuff(40);
+    MVDEHuff = MakeEhuff(40);
+    CBPEHuff = MakeEhuff(70);
+    T1EHuff = MakeEhuff(8192);
+    T2EHuff = MakeEhuff(8192);
+    T3EHuff = MakeEhuff(20);
+    LoadDTable(MBACoeff, MBADHuff);
+    LoadETable(MBACoeff, MBAEHuff);
+    LoadDTable(MVDCoeff, MVDDHuff);
+    LoadETable(MVDCoeff, MVDEHuff);
+    LoadDTable(CBPCoeff, CBPDHuff);
+    LoadETable(CBPCoeff, CBPEHuff);
+    LoadDTable(TCoeff1, T1DHuff);
+    LoadETable(TCoeff1, T1EHuff);
+    LoadDTable(TCoeff2, T2DHuff);
+    LoadETable(TCoeff2, T2EHuff);
+    LoadDTable(MTypeCoeff, T3DHuff);
+    LoadETable(MTypeCoeff, T3EHuff);
 }
 
 /*BFUNC
@@ -136,16 +134,18 @@ structure.
 
 EFUNC*/
 
-static DHUFF *MakeDhuff()
+static DHUFF* MakeDhuff()
 {
-  BEGIN("MakeDhuff");
-  int i;
-  DHUFF *temp;
+    BEGIN("MakeDhuff");
+    int i;
+    DHUFF* temp;
 
-  temp = MakeStructure(DHUFF);
-  temp->NumberStates=1;
-  for(i=0;i<512;i++) {temp->state[i] = -1;}
-  return(temp);
+    temp = MakeStructure(DHUFF);
+    temp->NumberStates = 1;
+    for (i = 0; i < 512; i++) {
+        temp->state[i] = -1;
+    }
+    return (temp);
 }
 
 /*BFUNC
@@ -156,23 +156,21 @@ represent the largest positive Huffman value.
 
 EFUNC*/
 
-static EHUFF *MakeEhuff(n)
-     int n;
+static EHUFF* MakeEhuff(n) int n;
 {
-  BEGIN("MakeEhuff");
-  int i;
-  EHUFF *temp;
+    BEGIN("MakeEhuff");
+    int i;
+    EHUFF* temp;
 
-  temp = MakeStructure(EHUFF);
-  temp->n = n;
-  temp->Hlen = (int *) calloc(n,sizeof(int));
-  temp->Hcode = (int *) calloc(n,sizeof(int));
-  for(i=0;i<n;i++)
-    {
-      temp->Hlen[i] = -1;
-      temp->Hcode[i] = -1;
+    temp = MakeStructure(EHUFF);
+    temp->n = n;
+    temp->Hlen = (int*)calloc(n, sizeof(int));
+    temp->Hcode = (int*)calloc(n, sizeof(int));
+    for (i = 0; i < n; i++) {
+        temp->Hlen[i] = -1;
+        temp->Hcode[i] = -1;
     }
-  return(temp);
+    return (temp);
 }
 
 /*BFUNC
@@ -183,23 +181,20 @@ end of the table.
 
 EFUNC*/
 
-static void LoadETable(array,table)
-     int *array;
-     EHUFF *table;
+static void LoadETable(array, table) int* array;
+EHUFF* table;
 {
-  BEGIN("LoadETable");
+    BEGIN("LoadETable");
 
-  while(*array>=0)
-    {
-      if (*array>table->n)
-	{
-	  WHEREAMI();
-	  printf("Table overflow.\n");
-	  exit(ERROR_BOUNDS);
-	}
-      table->Hlen[*array] = array[1];
-      table->Hcode[*array] = array[2];
-      array+=3;
+    while (*array >= 0) {
+        if (*array > table->n) {
+            WHEREAMI();
+            printf("Table overflow.\n");
+            exit(ERROR_BOUNDS);
+        }
+        table->Hlen[*array] = array[1];
+        table->Hcode[*array] = array[2];
+        array += 3;
     }
 }
 
@@ -211,16 +206,14 @@ value, the next one the size, and the third one the code.
 
 EFUNC*/
 
-static void LoadDTable(array,table)
-     int *array;
-     DHUFF *table;
+static void LoadDTable(array, table) int* array;
+DHUFF* table;
 {
-  BEGIN("LoadDTable");
+    BEGIN("LoadDTable");
 
-  while(*array>=0)
-    {
-      AddCode(array[1],array[2],array[0],table);
-      array+=3;
+    while (*array >= 0) {
+        AddCode(array[1], array[2], array[0], table);
+        array += 3;
     }
 }
 
@@ -232,17 +225,16 @@ structure.  It exits an error upon overflow.
 EFUNC*/
 
 static int GetNextState(huff)
-     DHUFF *huff;
+    DHUFF* huff;
 {
-  BEGIN("GetNextState");
+    BEGIN("GetNextState");
 
-  if (huff->NumberStates==512)
-    {
-      WHEREAMI();
-      printf("Overflow\n");
-      exit(ERROR_BOUNDS);
+    if (huff->NumberStates == 512) {
+        WHEREAMI();
+        printf("Overflow\n");
+        exit(ERROR_BOUNDS);
     }
-  return(huff->NumberStates++);
+    return (huff->NumberStates++);
 }
 
 /*BFUNC
@@ -253,36 +245,27 @@ stream and a zero on error.
 
 EFUNC*/
 
-int Encode(val,huff)
-     int val;
-     EHUFF *huff;
+int Encode(val, huff) int val;
+EHUFF* huff;
 {
-  BEGIN("Encode");
+    BEGIN("Encode");
 
-  if (val < 0)
-    {
-      WHEREAMI(); /* Serious error, illegal, notify... */
-      printf("Out of bounds val:%d.\n",val);
-      return(0);
-    }
-  else if (val>=huff->n)
-    {
-      return(0); /* No serious error, can occur with some values */
-    }
-  else if (huff->Hlen[val]<0)
-    {
-      return(0);  /* No serious error: can pass thru by alerting routine.*/
-    }
-  else
-    {
-/*      printf("Value: %d|%x  Length: %d  Code: %d\n",
+    if (val < 0) {
+        WHEREAMI(); /* Serious error, illegal, notify... */
+        printf("Out of bounds val:%d.\n", val);
+        return (0);
+    } else if (val >= huff->n) {
+        return (0); /* No serious error, can occur with some values */
+    } else if (huff->Hlen[val] < 0) {
+        return (0); /* No serious error: can pass thru by alerting routine.*/
+    } else {
+        /*      printf("Value: %d|%x  Length: %d  Code: %d\n",
 	     val,val,huff->Hlen[val],huff->Hcode[val]);*/
-      NumberBitsCoded+=huff->Hlen[val];
-      fputv(huff->Hlen[val],huff->Hcode[val]);
-      return(huff->Hlen[val]);
+        NumberBitsCoded += huff->Hlen[val];
+        fputv(huff->Hlen[val], huff->Hcode[val]);
+        return (huff->Hlen[val]);
     }
 }
-
 
 /*BFUNC
 
@@ -292,51 +275,37 @@ Huffman structure.
 EFUNC*/
 
 int Decode(huff)
-     DHUFF *huff;
+    DHUFF* huff;
 {
-  BEGIN("Decode");
-  int Next,cb;
-  int CurrentState=0;
+    BEGIN("Decode");
+    int Next, cb;
+    int CurrentState = 0;
 
-  while(1)
-    {
-      cb = fgetb();
-      if (cb)
-	{
-	  Next =  GetLeft(CurrentState,huff);
-	  if (Next == EmptyState)
-	    {
-	      WHEREAMI();
-	      printf("Invalid State Reached.\n");
-	      exit(ERROR_BOUNDS);
-	    }
-	  else if (Numberp(Next))
-	    {
-	      return(GetHVal(Next));
-	    }
-	  else
-	    {
-	      CurrentState = Next;
-	    }
-	}
-      else
-	{
-	  Next =  GetRight(CurrentState,huff);
-	  if (Next == EmptyState)
-	    {
-	      WHEREAMI();
-	      printf("Invalid State Reached.\n");
-	      exit(ERROR_BOUNDS);
-	    }
-	  else if (Numberp(Next))
-	    {
-	      return(GetHVal(Next));
-	    }
-	  else
-	    {
-	      CurrentState = Next;
-	    }
-	}
+    while (1) {
+        cb = fgetb();
+        if (cb) {
+            Next = GetLeft(CurrentState, huff);
+            if (Next == EmptyState) {
+                WHEREAMI();
+                printf("Invalid State Reached.\n");
+                exit(ERROR_BOUNDS);
+            } else if (Numberp(Next)) {
+                return (GetHVal(Next));
+            } else {
+                CurrentState = Next;
+            }
+        } else {
+            Next = GetRight(CurrentState, huff);
+            if (Next == EmptyState) {
+                WHEREAMI();
+                printf("Invalid State Reached.\n");
+                exit(ERROR_BOUNDS);
+            } else if (Numberp(Next)) {
+                return (GetHVal(Next));
+            } else {
+                CurrentState = Next;
+            }
+        }
     }
 }
 
@@ -348,97 +317,75 @@ when an invalid code is attempted to be placed in the structure.
 
 EFUNC*/
 
-static void AddCode(n,code,value,huff)
-     int n;
-     int code;
-     int value;
-     DHUFF *huff;
+static void AddCode(n, code, value, huff) int n;
+int code;
+int value;
+DHUFF* huff;
 {
-  BEGIN("AddCode");
-  int i,Next;
-  int CurrentState=0;
+    BEGIN("AddCode");
+    int i, Next;
+    int CurrentState = 0;
 
-  if (value < 0)
-    {
-      WHEREAMI();
-      printf("Negative addcode value: %d\n",value);
-      exit(ERROR_BOUNDS);
+    if (value < 0) {
+        WHEREAMI();
+        printf("Negative addcode value: %d\n", value);
+        exit(ERROR_BOUNDS);
     }
-  for(i=n-1;i>0;i--)
-    {
-      if (code & (1 << i))
-	{
-	  Next = GetLeft(CurrentState,huff);
-	  if (Next == EmptyState)
-	    {
-	      Next = GetNextState(huff);
-	      SetLeft(Next,CurrentState,huff);
-	      CurrentState = Next;
-	    }
-	  else if (Numberp(Next))
-	    {
-	      WHEREAMI();
-	      printf("Bad Value/State match:\n");
-	      printf("Length: %d   Code: %d  Value: %d\n",
-		     n,code,value);
-	      exit(ERROR_BOUNDS);
-	    }
-	  else
-	    {
-	      CurrentState = Next;
-	    }
-	}
-      else
-	{
-	  Next = GetRight(CurrentState,huff);
-	  if (Next == EmptyState)
-	    {
-	      Next = GetNextState(huff);
-	      SetRight(Next,CurrentState,huff);
-	      CurrentState = Next;
-	    }
-	  else if (Numberp(Next))
-	    {
-	      WHEREAMI();
-	      printf("Bad Value/State match:\n");
-	      printf("Length: %d   Code: %d  Value: %d\n",
-		     n,code,value);
-	      exit(ERROR_BOUNDS);
-	    }
-	  else
-	    {
-	      CurrentState = Next;
-	    }
-	}
+    for (i = n - 1; i > 0; i--) {
+        if (code & (1 << i)) {
+            Next = GetLeft(CurrentState, huff);
+            if (Next == EmptyState) {
+                Next = GetNextState(huff);
+                SetLeft(Next, CurrentState, huff);
+                CurrentState = Next;
+            } else if (Numberp(Next)) {
+                WHEREAMI();
+                printf("Bad Value/State match:\n");
+                printf("Length: %d   Code: %d  Value: %d\n",
+                    n, code, value);
+                exit(ERROR_BOUNDS);
+            } else {
+                CurrentState = Next;
+            }
+        } else {
+            Next = GetRight(CurrentState, huff);
+            if (Next == EmptyState) {
+                Next = GetNextState(huff);
+                SetRight(Next, CurrentState, huff);
+                CurrentState = Next;
+            } else if (Numberp(Next)) {
+                WHEREAMI();
+                printf("Bad Value/State match:\n");
+                printf("Length: %d   Code: %d  Value: %d\n",
+                    n, code, value);
+                exit(ERROR_BOUNDS);
+            } else {
+                CurrentState = Next;
+            }
+        }
     }
-  if (code & 1)
-    {
-      Next = GetLeft(CurrentState,huff);
-      if (Next != EmptyState)
-	{
-	  WHEREAMI();
-	  printf("Overflow on Huffman Table: Nonunique prefix.\n");
-	  printf("Length: %d   Code: %d|%x  Value: %d|%x\n",
-		 n,code,code,value,value);
-	  exit(ERROR_BOUNDS);
-	}
-      SetLeft(MakeHVal(value),CurrentState,huff);
-    }
-  else
-    {
-      Next = GetRight(CurrentState,huff);
-      if (Next != EmptyState)
-	{
-	  WHEREAMI();
-	  printf("Overflow on Huffman Table: Nonunique prefix.\n");
-	  printf("Length: %d   Code: %d|%x  Value: %d|%x\n",
-		 n,code,code,value,value);
-	  exit(ERROR_BOUNDS);
-	}
-      SetRight(MakeHVal(value),CurrentState,huff);
+    if (code & 1) {
+        Next = GetLeft(CurrentState, huff);
+        if (Next != EmptyState) {
+            WHEREAMI();
+            printf("Overflow on Huffman Table: Nonunique prefix.\n");
+            printf("Length: %d   Code: %d|%x  Value: %d|%x\n",
+                n, code, code, value, value);
+            exit(ERROR_BOUNDS);
+        }
+        SetLeft(MakeHVal(value), CurrentState, huff);
+    } else {
+        Next = GetRight(CurrentState, huff);
+        if (Next != EmptyState) {
+            WHEREAMI();
+            printf("Overflow on Huffman Table: Nonunique prefix.\n");
+            printf("Length: %d   Code: %d|%x  Value: %d|%x\n",
+                n, code, code, value, value);
+            exit(ERROR_BOUNDS);
+        }
+        SetRight(MakeHVal(value), CurrentState, huff);
     }
 }
-
 
 /*BFUNC
 
@@ -448,18 +395,17 @@ into it.
 EFUNC*/
 
 void PrintDhuff(huff)
-     DHUFF *huff;
+    DHUFF* huff;
 {
-  int i;
+    int i;
 
-  printf("Modified Huffman Decoding Structure: %x\n",huff);
-  printf("Number of states %d\n",huff->NumberStates);
-  for(i=0;i<huff->NumberStates;i++)
-    {
-      printf("State: %d  Left State: %x  Right State: %x\n",
-	     i,
-	     GetLeft(i,huff),
-	     GetRight(i,huff));
+    printf("Modified Huffman Decoding Structure: %x\n", huff);
+    printf("Number of states %d\n", huff->NumberStates);
+    for (i = 0; i < huff->NumberStates; i++) {
+        printf("State: %d  Left State: %x  Right State: %x\n",
+            i,
+            GetLeft(i, huff),
+            GetRight(i, huff));
     }
 }
 
@@ -470,20 +416,18 @@ PrintEhuff() prints the encoder Huffman structure passed into it.
 EFUNC*/
 
 void PrintEhuff(huff)
-     EHUFF *huff;
+    EHUFF* huff;
 {
-  BEGIN("PrintEhuff");
-  int i;
+    BEGIN("PrintEhuff");
+    int i;
 
-  printf("Modified Huffman Encoding Structure: %x\n",huff);
-  printf("Number of values %d\n",huff->n);
-  for(i=0;i<huff->n;i++)
-    {
-      if (huff->Hlen[i]>=0)
-	{
-	  printf("Value: %x  Length: %d  Code: %x\n",
-	     i,huff->Hlen[i],huff->Hcode[i]);
-	}
+    printf("Modified Huffman Encoding Structure: %x\n", huff);
+    printf("Number of values %d\n", huff->n);
+    for (i = 0; i < huff->n; i++) {
+        if (huff->Hlen[i] >= 0) {
+            printf("Value: %x  Length: %d  Code: %x\n",
+                i, huff->Hlen[i], huff->Hcode[i]);
+        }
     }
 }
 
@@ -493,18 +437,15 @@ PrintTable() prints out 256 elements in a nice byte ordered fashion.
 
 EFUNC*/
 
-void PrintTable(table)
-     int *table;
+void PrintTable(table) int* table;
 {
-  int i,j;
+    int i, j;
 
-  for(i=0;i<16;i++)
-    {
-      for(j=0;j<16;j++)
-	{
-	  printf("%2x ",*(table++));
-	}
-      printf("\n");
+    for (i = 0; i < 16; i++) {
+        for (j = 0; j < 16; j++) {
+            printf("%2x ", *(table++));
+        }
+        printf("\n");
     }
 }
 

@@ -29,16 +29,16 @@ io definitions.
 
 #define IOBUF struct io_buffer_list
 
-IOBUF {
-int hpos;
-int vpos;
-int hor;
-int ver;
-int width;
-int height;
-int flag;
-MEM *mem;
+IOBUF
+{
+    int hpos;
+    int vpos;
+    int hor;
+    int ver;
+    int width;
+    int height;
+    int flag;
+    MEM* mem;
 };
-
 
 #endif

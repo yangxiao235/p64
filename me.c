@@ -38,7 +38,7 @@ extern void initmc();
 extern void FastBME();
 extern void BruteMotionEstimation();
 extern void BMC();
-extern MEM *MotionCompensation();
+extern MEM* MotionCompensation();
 
 /*PRIVATE*/
 
@@ -57,12 +57,12 @@ int MeX[1024];
 int MeY[1024];
 int MeVal[1024];
 int MeOVal[1024];
-int MeN=0;
+int MeN = 0;
 
 int SearchLimit = 15;
-BLOCK nb,rb;
+BLOCK nb, rb;
 
-#define COMPARISON >=  /* This is to compare for short-circuit exit */
+#define COMPARISON >= /* This is to compare for short-circuit exit */
 
 /*START*/
 
@@ -75,10 +75,10 @@ EFUNC*/
 
 void initmc()
 {
-  BEGIN("initmc");
+    BEGIN("initmc");
 
-  nb = MakeBlock();
-  rb = MakeBlock();
+    nb = MakeBlock();
+    rb = MakeBlock();
 }
 
 /*BFUNC
@@ -89,92 +89,167 @@ void initmc()
  
  EFUNC*/
 
-__inline int ComputeError(unsigned char *bptr, unsigned char *cptr, MEM *rm, MEM *cm) {
-    int i,residue,error;
+__inline int ComputeError(unsigned char* bptr, unsigned char* cptr, MEM* rm, MEM* cm)
+{
+    int i, residue, error;
 #ifdef ARMSIMD32
-    int32_t a,b;
+    int32_t a, b;
 #elif __SSE2__
-    __m128i a,b;
+    __m128i a, b;
 #endif
     error = 0;
-    for(i=0;i<16;i++) {
+    for (i = 0; i < 16; i++) {
 #ifdef ARMSIMD32
-	a = *((int32_t*)bptr);
-	b = *((int32_t*)cptr);
-	asm volatile ("usad8 %[result], %[op1], %[op2]" : [result] "=r" (a): [op1] "0" (a), [op2] "r" (b));
-	error += a;
+        a = *((int32_t*)bptr);
+        b = *((int32_t*)cptr);
+        asm volatile("usad8 %[result], %[op1], %[op2]"
+                     : [ result ] "=r"(a)
+                     : [ op1 ] "0"(a), [ op2 ] "r"(b));
+        error += a;
 
-	a = *((int32_t*)(bptr + 4));
-	b = *((int32_t*)(cptr + 4));
-	asm volatile ("usad8 %[result], %[op1], %[op2]" : [result] "=r" (a): [op1] "0" (a), [op2] "r" (b));
-	error += a;
+        a = *((int32_t*)(bptr + 4));
+        b = *((int32_t*)(cptr + 4));
+        asm volatile("usad8 %[result], %[op1], %[op2]"
+                     : [ result ] "=r"(a)
+                     : [ op1 ] "0"(a), [ op2 ] "r"(b));
+        error += a;
 
-	a = *((int32_t*)(bptr + 8));
-	b = *((int32_t*)(cptr + 8));
-	asm volatile ("usad8 %[result], %[op1], %[op2]" : [result] "=r" (a): [op1] "0" (a), [op2] "r" (b));
-	error += a;
+        a = *((int32_t*)(bptr + 8));
+        b = *((int32_t*)(cptr + 8));
+        asm volatile("usad8 %[result], %[op1], %[op2]"
+                     : [ result ] "=r"(a)
+                     : [ op1 ] "0"(a), [ op2 ] "r"(b));
+        error += a;
 
-	a = *((int32_t*)(bptr + 12));
-	b = *((int32_t*)(cptr + 12));
-	asm volatile ("usad8 %[result], %[op1], %[op2]" : [result] "=r" (a): [op1] "0" (a), [op2] "r" (b));
-	error += a;
+        a = *((int32_t*)(bptr + 12));
+        b = *((int32_t*)(cptr + 12));
+        asm volatile("usad8 %[result], %[op1], %[op2]"
+                     : [ result ] "=r"(a)
+                     : [ op1 ] "0"(a), [ op2 ] "r"(b));
+        error += a;
 
-	if (error COMPARISON MV) break;
-	bptr += rm->width;
-	cptr += cm->width;
+        if (error COMPARISON MV)
+            break;
+        bptr += rm->width;
+        cptr += cm->width;
 #elif __SSE2__
-        a = _mm_loadu_si128((__m128i *) bptr);
-        b = _mm_loadu_si128((__m128i *) cptr);
+        a = _mm_loadu_si128((__m128i*)bptr);
+        b = _mm_loadu_si128((__m128i*)cptr);
         a = _mm_sad_epu8(a, b);
         b = _mm_srli_si128(a, 8);
         a = _mm_add_epi32(a, b);
         error += _mm_cvtsi128_si32(a);
         // break if the error exceeds the best known solution
-	if (error COMPARISON MV) break;
-	bptr += rm->width;
-	cptr += cm->width;
+        if (error COMPARISON MV)
+            break;
+        bptr += rm->width;
+        cptr += cm->width;
 #else
-        residue=(*(bptr++)-*(cptr++));
-	if (residue<0) {error-=residue;} else {error+=residue;}
-	residue=(*(bptr++)-*(cptr++));
-	if (residue<0) {error-=residue;} else {error+=residue;}
-	residue=(*(bptr++)-*(cptr++));
-	if (residue<0) {error-=residue;} else {error+=residue;}
-	residue=(*(bptr++)-*(cptr++));
-	if (residue<0) {error-=residue;} else {error+=residue;}
-	residue=(*(bptr++)-*(cptr++));
-	if (residue<0) {error-=residue;} else {error+=residue;}
-	residue=(*(bptr++)-*(cptr++));
-	if (residue<0) {error-=residue;} else {error+=residue;}
-	residue=(*(bptr++)-*(cptr++));
-	if (residue<0) {error-=residue;} else {error+=residue;}
-	residue=(*(bptr++)-*(cptr++));
-	if (residue<0) {error-=residue;} else {error+=residue;}
-	residue=(*(bptr++)-*(cptr++));
-	if (residue<0) {error-=residue;} else {error+=residue;}
-	residue=(*(bptr++)-*(cptr++));
-	if (residue<0) {error-=residue;} else {error+=residue;}
-	residue=(*(bptr++)-*(cptr++));
-	if (residue<0) {error-=residue;} else {error+=residue;}
-	residue=(*(bptr++)-*(cptr++));
-	if (residue<0) {error-=residue;} else {error+=residue;}
-	residue=(*(bptr++)-*(cptr++));
-	if (residue<0) {error-=residue;} else {error+=residue;}
-	residue=(*(bptr++)-*(cptr++));
-	if (residue<0) {error-=residue;} else {error+=residue;}
-	residue=(*(bptr++)-*(cptr++));
-	if (residue<0) {error-=residue;} else {error+=residue;}
-	residue=(*(bptr++)-*(cptr++));
-	if (residue<0) {error-=residue;} else {error+=residue;}
+        residue = (*(bptr++) - *(cptr++));
+        if (residue < 0) {
+            error -= residue;
+        } else {
+            error += residue;
+        }
+        residue = (*(bptr++) - *(cptr++));
+        if (residue < 0) {
+            error -= residue;
+        } else {
+            error += residue;
+        }
+        residue = (*(bptr++) - *(cptr++));
+        if (residue < 0) {
+            error -= residue;
+        } else {
+            error += residue;
+        }
+        residue = (*(bptr++) - *(cptr++));
+        if (residue < 0) {
+            error -= residue;
+        } else {
+            error += residue;
+        }
+        residue = (*(bptr++) - *(cptr++));
+        if (residue < 0) {
+            error -= residue;
+        } else {
+            error += residue;
+        }
+        residue = (*(bptr++) - *(cptr++));
+        if (residue < 0) {
+            error -= residue;
+        } else {
+            error += residue;
+        }
+        residue = (*(bptr++) - *(cptr++));
+        if (residue < 0) {
+            error -= residue;
+        } else {
+            error += residue;
+        }
+        residue = (*(bptr++) - *(cptr++));
+        if (residue < 0) {
+            error -= residue;
+        } else {
+            error += residue;
+        }
+        residue = (*(bptr++) - *(cptr++));
+        if (residue < 0) {
+            error -= residue;
+        } else {
+            error += residue;
+        }
+        residue = (*(bptr++) - *(cptr++));
+        if (residue < 0) {
+            error -= residue;
+        } else {
+            error += residue;
+        }
+        residue = (*(bptr++) - *(cptr++));
+        if (residue < 0) {
+            error -= residue;
+        } else {
+            error += residue;
+        }
+        residue = (*(bptr++) - *(cptr++));
+        if (residue < 0) {
+            error -= residue;
+        } else {
+            error += residue;
+        }
+        residue = (*(bptr++) - *(cptr++));
+        if (residue < 0) {
+            error -= residue;
+        } else {
+            error += residue;
+        }
+        residue = (*(bptr++) - *(cptr++));
+        if (residue < 0) {
+            error -= residue;
+        } else {
+            error += residue;
+        }
+        residue = (*(bptr++) - *(cptr++));
+        if (residue < 0) {
+            error -= residue;
+        } else {
+            error += residue;
+        }
+        residue = (*(bptr++) - *(cptr++));
+        if (residue < 0) {
+            error -= residue;
+        } else {
+            error += residue;
+        }
         // break if the error exceeds the best known solution
-	if (error COMPARISON MV) break;
-	bptr += (rm->width - 16);
-	cptr += (cm->width - 16);
+        if (error COMPARISON MV)
+            break;
+        bptr += (rm->width - 16);
+        cptr += (cm->width - 16);
 #endif
     }
     return error;
 }
-
 
 /*BFUNC
 
@@ -184,7 +259,8 @@ abort to speed up calculation.
 
 EFUNC*/
 
-void FastBME(int rx, int ry, MEM *rm, int cx, int cy, MEM *cm) {
+void FastBME(int rx, int ry, MEM* rm, int cx, int cy, MEM* cm)
+{
 
     BEGIN("FastBME");
     int px, py, dx, dy, i, j, data, error;
@@ -195,10 +271,10 @@ void FastBME(int rx, int ry, MEM *rm, int cx, int cy, MEM *cm) {
     bptr = rm->data + rx + (ry * rm->width);
     baseptr = cm->data + cx + (cy * cm->width);
     cptr = baseptr;
-    
+
     // make sure we don't short-circuit when computing the error score
     MV = 65536;
-    
+
     // determine error for (0,0)
     OMV = MV = ComputeError(bptr, cptr, rm, cm);
 
@@ -209,8 +285,7 @@ void FastBME(int rx, int ry, MEM *rm, int cx, int cy, MEM *cm) {
             py = ry + dy;
 
             // only test vector if we're within frame boundaries
-            if ((px >= 0) && (px < rm->width - 16) &&
-                    (py >= 0) && (py < rm->height - 16)) {
+            if ((px >= 0) && (px < rm->width - 16) && (py >= 0) && (py < rm->height - 16)) {
 
                 error = 0;
                 bptr = rm->data + px + (py * rm->width);
@@ -232,8 +307,8 @@ void FastBME(int rx, int ry, MEM *rm, int cx, int cy, MEM *cm) {
     for (VAR = 0, VAROR = 0, MWOR = 0, i = 0; i < 16; i++) {
         for (j = 0; j < 16; j++) {
             data = *(bptr) - *(cptr);
-            VAR += data*data;
-            VAROR += *(bptr)*(*(bptr));
+            VAR += data * data;
+            VAROR += *(bptr) * (*(bptr));
             MWOR += *(bptr);
             bptr++;
             cptr++;
@@ -242,7 +317,7 @@ void FastBME(int rx, int ry, MEM *rm, int cx, int cy, MEM *cm) {
         cptr += (cm->width - 16);
     }
     VAR = VAR / 256;
-    VAROR = (VAROR / 256)-(MWOR / 256)*(MWOR / 256);
+    VAROR = (VAROR / 256) - (MWOR / 256) * (MWOR / 256);
 }
 
 /*BFUNC
@@ -252,7 +327,8 @@ proposed by Koga et al. 1981
 
 EFUNC*/
 
-void StepBME(int rx, int ry, MEM *rm, int cx, int cy, MEM *cm) {
+void StepBME(int rx, int ry, MEM* rm, int cx, int cy, MEM* cm)
+{
 
     BEGIN("StepBME");
     int px, py, dx, dy, i, j, data, error, step, dirx, diry, bestx, besty;
@@ -279,19 +355,17 @@ void StepBME(int rx, int ry, MEM *rm, int cx, int cy, MEM *cm) {
             py = besty + (diry * step);
             dy = py - ry;
             for (dirx = -1; dirx <= 1; ++dirx) {
-                if(dirx == 0 && diry == 0) {
+                if (dirx == 0 && diry == 0) {
                     // dont' test center again, we already did that
                     continue;
                 }
-                
+
                 px = bestx + (dirx * step);
                 dx = px - rx;
 
                 // only test vector if we're within frame boundaries
                 // and the vector components are within -15..15
-                if ((px >= 0) && (px < rm->width - 16) &&
-                        (py >= 0) && (py < rm->height - 16) &&
-                         dx >= -15 && dx <= 15 && dy >= -15 && dy <= 15) {
+                if ((px >= 0) && (px < rm->width - 16) && (py >= 0) && (py < rm->height - 16) && dx >= -15 && dx <= 15 && dy >= -15 && dy <= 15) {
 
                     bptr = rm->data + px + (py * rm->width);
                     cptr = baseptr;
@@ -316,8 +390,8 @@ void StepBME(int rx, int ry, MEM *rm, int cx, int cy, MEM *cm) {
     for (VAR = 0, VAROR = 0, MWOR = 0, i = 0; i < 16; i++) {
         for (j = 0; j < 16; j++) {
             data = *(bptr) - *(cptr);
-            VAR += data*data;
-            VAROR += *(bptr)*(*(bptr));
+            VAR += data * data;
+            VAROR += *(bptr) * (*(bptr));
             MWOR += *(bptr);
             bptr++;
             cptr++;
@@ -326,10 +400,9 @@ void StepBME(int rx, int ry, MEM *rm, int cx, int cy, MEM *cm) {
         cptr += (cm->width - 16);
     }
     VAR = VAR / 256;
-    VAROR = (VAROR / 256)-(MWOR / 256)*(MWOR / 256);
+    VAROR = (VAROR / 256) - (MWOR / 256) * (MWOR / 256);
 }
-     
-     
+
 /*BFUNC
 
 MotionEstimation() does a motion estimation on all
@@ -337,28 +410,26 @@ aligned 16x16 blocks in two memory structures.
 
 EFUNC*/
 
-void MotionEstimation(pmem,fmem)
-     MEM *pmem;
-     MEM *fmem;
+void MotionEstimation(pmem, fmem)
+    MEM* pmem;
+MEM* fmem;
 {
-  BEGIN("MotionEstimation");
-  int x,y;
+    BEGIN("MotionEstimation");
+    int x, y;
 
-  for(MeN=0,y=0;y<fmem->height;y+=16)
-    {
-      for(x=0;x<fmem->width;x+=16)
-	{
-	  //FastBME(x,y,pmem,x,y,fmem);
-          StepBME(x,y,pmem,x,y,fmem);
-	  MeVAR[MeN] = VAR;
-	  MeVAROR[MeN] = VAROR;
-	  MeMWOR[MeN] = MWOR;
-	  MeX[MeN] = MX;
-	  MeY[MeN] = MY;
-	  MeVal[MeN] = MV;
-	  MeOVal[MeN] = OMV;
-	  MeN++;
-	}
+    for (MeN = 0, y = 0; y < fmem->height; y += 16) {
+        for (x = 0; x < fmem->width; x += 16) {
+            //FastBME(x,y,pmem,x,y,fmem);
+            StepBME(x, y, pmem, x, y, fmem);
+            MeVAR[MeN] = VAR;
+            MeVAROR[MeN] = VAROR;
+            MeMWOR[MeN] = MWOR;
+            MeX[MeN] = MX;
+            MeY[MeN] = MY;
+            MeVal[MeN] = MV;
+            MeOVal[MeN] = OMV;
+            MeN++;
+        }
     }
 }
 
@@ -369,19 +440,18 @@ another memory structure with appropriate indexes.
 
 EFUNC*/
 
-void BMC(rx,ry,rm,cx,cy,cm)
-     int rx;
-     int ry;
-     MEM *rm;
-     int cx;
-     int cy;
-     MEM *cm;
+void BMC(rx, ry, rm, cx, cy, cm) int rx;
+int ry;
+MEM* rm;
+int cx;
+int cy;
+MEM* cm;
 {
-  BEGIN("BMC");
+    BEGIN("BMC");
 
-  SetPointerBlock(rx,ry,cm,nb);
-  SetPointerBlock(cx+MX,cy+MY,rm,rb);
-  CopyBlock(rb,nb);
+    SetPointerBlock(rx, ry, cm, nb);
+    SetPointerBlock(cx + MX, cy + MY, rm, rb);
+    CopyBlock(rb, nb);
 }
 
 /*BFUNC
@@ -393,28 +463,29 @@ memory structure.
 
 EFUNC*/
 
-MEM *MotionCompensation(mem,omem)
-     MEM *mem;
-     MEM *omem;
+MEM* MotionCompensation(mem, omem)
+    MEM* mem;
+MEM* omem;
 {
-  BEGIN("MotionCompensation");
-  int x,y;
-  int count;
-  MEM *temp;
+    BEGIN("MotionCompensation");
+    int x, y;
+    int count;
+    MEM* temp;
 
-  if (omem) {temp=omem;}
-  else {temp = MakeMem(mem->width,mem->height);}
-  for(count=0,y=0;y<mem->height;y+=16)
-    {
-      for(x=0;x<mem->width;x+=16)
-	{
-	  SetPointerBlock(x,y,temp,nb);
-	  SetPointerBlock(x+MeX[count],y+MeY[count],mem,rb);
-	  count++;
-	  CopyBlock(rb,nb);
-	}
+    if (omem) {
+        temp = omem;
+    } else {
+        temp = MakeMem(mem->width, mem->height);
     }
-  return(temp);
+    for (count = 0, y = 0; y < mem->height; y += 16) {
+        for (x = 0; x < mem->width; x += 16) {
+            SetPointerBlock(x, y, temp, nb);
+            SetPointerBlock(x + MeX[count], y + MeY[count], mem, rb);
+            count++;
+            CopyBlock(rb, nb);
+        }
+    }
+    return (temp);
 }
 
 /*END*/

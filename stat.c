@@ -26,8 +26,8 @@ This routine keeps all the statistics handy.
 
 /*LABEL stat.c */
 
-#include <math.h>
 #include "globals.h"
+#include <math.h>
 
 /*PUBLIC*/
 
@@ -36,9 +36,9 @@ static void StatisticsMem();
 
 /*PRIVATE*/
 
-extern FRAME *CFrame;
-extern FSTORE *CFS;
-extern STAT *CStat;
+extern FRAME* CFrame;
+extern FSTORE* CFS;
+extern STAT* CStat;
 
 /*START*/
 
@@ -51,14 +51,13 @@ EFUNC*/
 
 void Statistics()
 {
-  BEGIN("Statistics");
-  int i;
+    BEGIN("Statistics");
+    int i;
 
-  for(i=0;i<CFrame->NumberComponents;i++)
-    {
-      StatisticsMem(CFrame->Iob[i]->mem,CFS->fs[i]->mem,CStat);
-      printf("Comp: %d  MRSNR: %2.2f  SNR: %2.2f  PSNR: %2.2f  MSE: %4.2f  Entropy: %1.2f\n",
-	     i,CStat->mrsnr,CStat->snr,CStat->psnr,CStat->mse,CStat->entropy);
+    for (i = 0; i < CFrame->NumberComponents; i++) {
+        StatisticsMem(CFrame->Iob[i]->mem, CFS->fs[i]->mem, CStat);
+        printf("Comp: %d  MRSNR: %2.2f  SNR: %2.2f  PSNR: %2.2f  MSE: %4.2f  Entropy: %1.2f\n",
+            i, CStat->mrsnr, CStat->snr, CStat->psnr, CStat->mse, CStat->entropy);
     }
 }
 
@@ -70,63 +69,65 @@ structure.
 
 EFUNC*/
 
-static void StatisticsMem(mref,m,s)
-     MEM *mref;
-     MEM *m;
-     STAT *s;
+static void StatisticsMem(mref, m, s)
+    MEM* mref;
+MEM* m;
+STAT* s;
 {
-  BEGIN("StatisticsMem");
-  int i,top;
-  double value,squared,p,mr;
-  double rvalue,rsquared;
-  int Values[256],*iptr;
-  unsigned char *cptr,*rptr;
+    BEGIN("StatisticsMem");
+    int i, top;
+    double value, squared, p, mr;
+    double rvalue, rsquared;
+    int Values[256], *iptr;
+    unsigned char *cptr, *rptr;
 
-  top = m->width*m->height;
-  for(i=0,iptr=Values;i<256;i++) {*(iptr++)=0;}
-  value=0;
-  squared=0;
-  rsquared=0;
-  rvalue=0;
-  for(i=0,rptr=mref->data,cptr=m->data;i<top;i++)
-    {
-      rvalue += (double) *rptr;
-      value += (double) *cptr;
-      squared += (double) (((*cptr)-*(rptr)) *((*cptr)-(*rptr)));
-      rsquared += (double) ((*rptr) * (*rptr));
+    top = m->width * m->height;
+    for (i = 0, iptr = Values; i < 256; i++) {
+        *(iptr++) = 0;
+    }
+    value = 0;
+    squared = 0;
+    rsquared = 0;
+    rvalue = 0;
+    for (i = 0, rptr = mref->data, cptr = m->data; i < top; i++) {
+        rvalue += (double)*rptr;
+        value += (double)*cptr;
+        squared += (double)(((*cptr) - *(rptr)) * ((*cptr) - (*rptr)));
+        rsquared += (double)((*rptr) * (*rptr));
 
-      Values[*cptr]++;
-      cptr++;
-      rptr++;
+        Values[*cptr]++;
+        cptr++;
+        rptr++;
     }
-  s->mean = value/(double) top;
-  s->mse = squared/(double) top;
-  if (squared)
-    {
-      if (rsquared) s->snr = 10*log10(rsquared/squared);
-      else s->snr = -99.99;
-      mr = (rsquared-(rvalue*rvalue/((double)top)));
-      if (mr) s->mrsnr = 10*log10(mr/squared);
-      else s->mrsnr = -99.99;
-      if (top) s->psnr = 10*log10((65025.0 * (double) top)/squared);
-      else s->psnr = -99.99;
+    s->mean = value / (double)top;
+    s->mse = squared / (double)top;
+    if (squared) {
+        if (rsquared)
+            s->snr = 10 * log10(rsquared / squared);
+        else
+            s->snr = -99.99;
+        mr = (rsquared - (rvalue * rvalue / ((double)top)));
+        if (mr)
+            s->mrsnr = 10 * log10(mr / squared);
+        else
+            s->mrsnr = -99.99;
+        if (top)
+            s->psnr = 10 * log10((65025.0 * (double)top) / squared);
+        else
+            s->psnr = -99.99;
+    } else {
+        s->snr = 99.99;
+        s->mrsnr = 99.99;
+        s->psnr = 99.99;
     }
-  else
-    {
-      s->snr = 99.99;
-      s->mrsnr = 99.99;
-      s->psnr = 99.99;
+    for (i = 0, s->entropy = 0, iptr = Values; i < 256; i++) {
+        if (*iptr) {
+            p = (double)*iptr / (double)top;
+            s->entropy += p * log(p);
+        }
+        iptr++;
     }
-  for(i=0,s->entropy=0,iptr=Values;i<256;i++)
-    {
-      if (*iptr)
-	{
-	  p = (double) *iptr/ (double) top;
-	  s->entropy += p * log(p);
-	}
-      iptr++;
-    }
-  s->entropy = - s->entropy / log(2.0);
+    s->entropy = -s->entropy / log(2.0);
 }
 
 /*END*/

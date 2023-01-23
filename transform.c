@@ -27,8 +27,8 @@ algorithms.
 
 /*LABEL transform.c */
 
-#include "globals.h"
 #include "dct.h"
+#include "globals.h"
 #include <math.h>
 
 /*PUBLIC*/
@@ -54,29 +54,26 @@ static void DoubleTransposeMatrix();
 
 /*PRIVATE*/
 
-static int transpose_index[] =
-{0,  8, 16, 24, 32, 40, 48, 56,
- 1,  9, 17, 25, 33, 41, 49, 57,
- 2, 10, 18, 26, 34, 42, 50, 58,
- 3, 11, 19, 27, 35, 43, 51, 59,
- 4, 12, 20, 28, 36, 44, 52, 60, 
- 5, 13, 21, 29, 37, 45, 53, 61,
- 6, 14, 22, 30, 38, 46, 54, 62,
- 7, 15, 23, 31, 39, 47, 55, 63};
+static int transpose_index[] = { 0, 8, 16, 24, 32, 40, 48, 56,
+    1, 9, 17, 25, 33, 41, 49, 57,
+    2, 10, 18, 26, 34, 42, 50, 58,
+    3, 11, 19, 27, 35, 43, 51, 59,
+    4, 12, 20, 28, 36, 44, 52, 60,
+    5, 13, 21, 29, 37, 45, 53, 61,
+    6, 14, 22, 30, 38, 46, 54, 62,
+    7, 15, 23, 31, 39, 47, 55, 63 };
 
-static int zigzag_index[] =
-{0,  1,  5,  6, 14, 15, 27, 28,
- 2,  4,  7, 13, 16, 26, 29, 42,
- 3,  8, 12, 17, 25, 30, 41, 43,
- 9, 11, 18, 24, 31, 40, 44, 53,
-10, 19, 23, 32, 39, 45, 52, 54,
-20, 22, 33, 38, 46, 51, 55, 60,
-21, 34, 37, 47, 50, 56, 59, 61,
-35, 36, 48, 49, 57, 58, 62, 63};
+static int zigzag_index[] = { 0, 1, 5, 6, 14, 15, 27, 28,
+    2, 4, 7, 13, 16, 26, 29, 42,
+    3, 8, 12, 17, 25, 30, 41, 43,
+    9, 11, 18, 24, 31, 40, 44, 53,
+    10, 19, 23, 32, 39, 45, 52, 54,
+    20, 22, 33, 38, 46, 51, 55, 60,
+    21, 34, 37, 47, 50, 56, 59, 61,
+    35, 36, 48, 49, 57, 58, 62, 63 };
 
-
-#define MakeMatrix() (int *) calloc(BLOCKSIZE,sizeof(int))
-#define FixedMultiply(s,x,y)  x = ((x * y) >> s);
+#define MakeMatrix() (int*)calloc(BLOCKSIZE, sizeof(int))
+#define FixedMultiply(s, x, y) x = ((x * y) >> s);
 #define DCT_OFFSET 128
 
 /*START*/
@@ -88,42 +85,73 @@ fast integer divides for the most common divisors.
 
 EFUNC*/
 
-
-/*__inline*/ int FastDivide(int divident, int divisor) {
-    switch(divisor) {
-        case 1: return divident;
-        case 2: return divident / 2;
-        case 3: return divident / 3;
-        case 4: return divident / 4;
-        case 5: return divident / 5;
-        case 6: return divident / 6;
-        case 7: return divident / 7;
-        case 8: return divident / 8;
-        case 9: return divident / 9;
-        case 10: return divident / 10;
-        case 11: return divident / 11;
-        case 12: return divident / 12;
-        case 13: return divident / 13;
-        case 14: return divident / 14;
-        case 15: return divident / 15;
-        case 16: return divident / 16;
-        case 17: return divident / 17;
-        case 18: return divident / 18;
-        case 19: return divident / 19;
-        case 20: return divident / 20;
-        case 21: return divident / 21;
-        case 22: return divident / 22;
-        case 23: return divident / 23;
-        case 24: return divident / 24;
-        case 25: return divident / 25;
-        case 26: return divident / 26;
-        case 27: return divident / 27;
-        case 28: return divident / 28;
-        case 29: return divident / 29;
-        case 30: return divident / 30;
-        case 31: return divident / 31;
+/*__inline*/ int FastDivide(int divident, int divisor)
+{
+    switch (divisor) {
+    case 1:
+        return divident;
+    case 2:
+        return divident / 2;
+    case 3:
+        return divident / 3;
+    case 4:
+        return divident / 4;
+    case 5:
+        return divident / 5;
+    case 6:
+        return divident / 6;
+    case 7:
+        return divident / 7;
+    case 8:
+        return divident / 8;
+    case 9:
+        return divident / 9;
+    case 10:
+        return divident / 10;
+    case 11:
+        return divident / 11;
+    case 12:
+        return divident / 12;
+    case 13:
+        return divident / 13;
+    case 14:
+        return divident / 14;
+    case 15:
+        return divident / 15;
+    case 16:
+        return divident / 16;
+    case 17:
+        return divident / 17;
+    case 18:
+        return divident / 18;
+    case 19:
+        return divident / 19;
+    case 20:
+        return divident / 20;
+    case 21:
+        return divident / 21;
+    case 22:
+        return divident / 22;
+    case 23:
+        return divident / 23;
+    case 24:
+        return divident / 24;
+    case 25:
+        return divident / 25;
+    case 26:
+        return divident / 26;
+    case 27:
+        return divident / 27;
+    case 28:
+        return divident / 28;
+    case 29:
+        return divident / 29;
+    case 30:
+        return divident / 30;
+    case 31:
+        return divident / 31;
     }
-    return divident / divisor;     
+    return divident / divisor;
 }
 /*BFUNC
 
@@ -132,33 +160,34 @@ ReferenceDct() does a reference DCT on the input (matrix) and output
 
 EFUNC*/
 
-void ReferenceDct(int *matrix, int *newmatrix) {
+void ReferenceDct(int* matrix, int* newmatrix)
+{
     BEGIN("ReferenceDct");
-    int *mptr;
+    int* mptr;
     double *sptr, *dptr;
     double sourcematrix[BLOCKSIZE], destmatrix[BLOCKSIZE];
 
     for (sptr = sourcematrix, mptr = matrix; mptr < matrix + BLOCKSIZE; mptr++) {
-        *(sptr++) = (double) *mptr;
+        *(sptr++) = (double)*mptr;
     }
     for (dptr = destmatrix, sptr = sourcematrix;
-            sptr < sourcematrix + BLOCKSIZE; sptr += BLOCKWIDTH) {
+         sptr < sourcematrix + BLOCKSIZE; sptr += BLOCKWIDTH) {
         DoubleReferenceDct1D(sptr, dptr);
         dptr += BLOCKWIDTH;
     }
     DoubleTransposeMatrix(destmatrix, sourcematrix);
     for (dptr = destmatrix, sptr = sourcematrix;
-            sptr < sourcematrix + BLOCKSIZE; sptr += BLOCKWIDTH) {
+         sptr < sourcematrix + BLOCKSIZE; sptr += BLOCKWIDTH) {
         DoubleReferenceDct1D(sptr, dptr);
         dptr += BLOCKWIDTH;
     }
     DoubleTransposeMatrix(destmatrix, sourcematrix);
     for (sptr = sourcematrix, mptr = newmatrix;
-            mptr < newmatrix + BLOCKSIZE; sptr++) { /* NB: Inversion on counter */
-        *(mptr++) = (int) (*sptr > 0 ? (*(sptr) + 0.5) : (*(sptr) - 0.5));
+         mptr < newmatrix + BLOCKSIZE; sptr++) { /* NB: Inversion on counter */
+        *(mptr++) = (int)(*sptr > 0 ? (*(sptr) + 0.5) : (*(sptr)-0.5));
     }
 }
-     
+
 /*BFUNC
 
 DoubleReferenceDCT1D() does a 8 point dct on an array of double
@@ -166,7 +195,8 @@ input and places the result in a double output.
 
 EFUNC*/
 
-static void DoubleReferenceDct1D(double *ivect, double *ovect) {
+static void DoubleReferenceDct1D(double* ivect, double* ovect)
+{
     BEGIN("DoubleReferenceDct1D");
     double *mptr, *iptr, *optr;
 
@@ -185,29 +215,30 @@ output (newmatrix).
 
 EFUNC*/
 
-void ReferenceIDct(int *matrix, int *newmatrix) {
+void ReferenceIDct(int* matrix, int* newmatrix)
+{
     BEGIN("ReferenceIDct");
-    int *mptr;
+    int* mptr;
     double *sptr, *dptr;
     double sourcematrix[BLOCKSIZE], destmatrix[BLOCKSIZE];
 
     for (sptr = sourcematrix, mptr = matrix; mptr < matrix + BLOCKSIZE; mptr++) {
-        *(sptr++) = (double) *mptr;
+        *(sptr++) = (double)*mptr;
     }
     for (dptr = destmatrix, sptr = sourcematrix;
-            sptr < sourcematrix + BLOCKSIZE; sptr += BLOCKWIDTH) {
+         sptr < sourcematrix + BLOCKSIZE; sptr += BLOCKWIDTH) {
         DoubleReferenceIDct1D(sptr, dptr);
         dptr += BLOCKWIDTH;
     }
     DoubleTransposeMatrix(destmatrix, sourcematrix);
     for (dptr = destmatrix, sptr = sourcematrix;
-            sptr < sourcematrix + BLOCKSIZE; sptr += BLOCKWIDTH) {
+         sptr < sourcematrix + BLOCKSIZE; sptr += BLOCKWIDTH) {
         DoubleReferenceIDct1D(sptr, dptr);
         dptr += BLOCKWIDTH;
     }
     DoubleTransposeMatrix(destmatrix, sourcematrix);
     for (sptr = sourcematrix, mptr = newmatrix; mptr < newmatrix + BLOCKSIZE; sptr++) { /* NB: Inversion on counter */
-        *(mptr++) = (int) (*sptr > 0 ? (*(sptr) + 0.5) : (*(sptr) - 0.5));
+        *(mptr++) = (int)(*sptr > 0 ? (*(sptr) + 0.5) : (*(sptr)-0.5));
     }
 }
 
@@ -218,7 +249,8 @@ puts the output in ovect.
 
 EFUNC*/
 
-static void DoubleReferenceIDct1D(double *ivect, double *ovect) {
+static void DoubleReferenceIDct1D(double* ivect, double* ovect)
+{
     BEGIN("DoubleReferenceIDct1D");
     double *mptr, *iptr, *optr;
 
@@ -236,9 +268,10 @@ newmatrix.
 
 EFUNC*/
 
-void TransposeMatrix(int *matrix, int *newmatrix) {
+void TransposeMatrix(int* matrix, int* newmatrix)
+{
     BEGIN("TransposeMatrix");
-    int *tptr;
+    int* tptr;
 
     for (tptr = transpose_index; tptr < transpose_index + BLOCKSIZE; tptr++) {
         *(newmatrix++) = matrix[*tptr];
@@ -252,15 +285,16 @@ double output in newmatrix.
 
 EFUNC*/
 
-static void DoubleTransposeMatrix(double *matrix, double *newmatrix) {
+static void DoubleTransposeMatrix(double* matrix, double* newmatrix)
+{
     BEGIN("DoubleTransposeMatrix");
-    int *tptr;
+    int* tptr;
 
     for (tptr = transpose_index; tptr < transpose_index + BLOCKSIZE; tptr++) {
         *(newmatrix++) = matrix[*tptr];
     }
 }
-     
+
 /*BFUNC
 
 CCITTQuantize() quantizes the input matrix with a DC quantize step
@@ -268,7 +302,8 @@ and an AC quantize step.
 
 EFUNC*/
 
-__inline void CCITTQuantize(int *matrix, int dcqfact, int acqfact) {
+__inline void CCITTQuantize(int* matrix, int dcqfact, int acqfact)
+{
 
     BEGIN("CCITTQuantize");
     int *mptr, coeff;
@@ -314,9 +349,10 @@ and an acqfactor (thresholded).
 
 EFUNC*/
 
-void CCITTFlatQuantize(int *matrix, int dcqfact, int acqfact) {
+void CCITTFlatQuantize(int* matrix, int dcqfact, int acqfact)
+{
     BEGIN("CCITTFlatQuantize");
-    int *mptr;
+    int* mptr;
 
     if (*matrix > 0) {
         *matrix = FastDivide((*matrix + dcqfact / 2), dcqfact);
@@ -356,11 +392,12 @@ matrix.
 
 EFUNC*/
 
-void ICCITTFlatQuantize(int *matrix, int dcqfact, int acqfact) {
+void ICCITTFlatQuantize(int* matrix, int dcqfact, int acqfact)
+{
     BEGIN("ICCITTFlatQuantize");
-    int *mptr;
+    int* mptr;
 
-    *matrix = *matrix*dcqfact;
+    *matrix = *matrix * dcqfact;
 #ifdef VERSION_1_0
     acqfact++;
     for (mptr = matrix + 1; mptr < matrix + BLOCKSIZE; mptr++) {
@@ -397,9 +434,10 @@ element with their selective q values, respectively.
 
 EFUNC*/
 
-void ICCITTQuantize(int *matrix, int dcqfact, int acqfact) {
+void ICCITTQuantize(int* matrix, int dcqfact, int acqfact)
+{
     BEGIN("ICCITTQuantize");
-    int *mptr;
+    int* mptr;
 
 #ifdef VERSION_1_0
     dcqfact++;
@@ -457,9 +495,10 @@ a 10 bit word.
 
 EFUNC*/
 
-void BoundDctMatrix(int *matrix) {
+void BoundDctMatrix(int* matrix)
+{
     BEGIN("BoundDctMatrix");
-    int *mptr;
+    int* mptr;
 
     if (*matrix > 2047) {
         *matrix = 2047;
@@ -480,9 +519,10 @@ value greater than 255 or less than 0.
 
 EFUNC*/
 
-void BoundIDctMatrix(int *matrix) {
+void BoundIDctMatrix(int* matrix)
+{
     BEGIN("BoundIDctMatrix");
-    int *mptr;
+    int* mptr;
 
     for (mptr = matrix; mptr < matrix + BLOCKSIZE; mptr++) {
         if (*mptr < 0) {
@@ -499,9 +539,10 @@ CCITTFlatQuantize().
 
 EFUNC*/
 
-void FlatBoundQuantizeMatrix(int *matrix) {
+void FlatBoundQuantizeMatrix(int* matrix)
+{
     BEGIN("FlatBoundQuantizeMatrix");
-    int *mptr;
+    int* mptr;
 
     if (*matrix > 254) {
         *matrix = 254;
@@ -523,9 +564,10 @@ CCITTQuantize().
 
 EFUNC*/
 
-void BoundQuantizeMatrix(int *matrix) {
+void BoundQuantizeMatrix(int* matrix)
+{
     BEGIN("BoundQuantizeMatrix");
-    int *mptr;
+    int* mptr;
 
     for (mptr = matrix; mptr < matrix + BLOCKSIZE; mptr++) {
         if (*mptr < -127) {
@@ -543,9 +585,10 @@ input imatrix and places the output in omatrix.
 
 EFUNC*/
 
-void IZigzagMatrix(int *imatrix, int *omatrix) {
+void IZigzagMatrix(int* imatrix, int* omatrix)
+{
     BEGIN("IZigzagMatrix");
-    int *tptr;
+    int* tptr;
 
     for (tptr = zigzag_index; tptr < zigzag_index + BLOCKSIZE; tptr++) {
         *(omatrix++) = imatrix[*tptr];
@@ -558,9 +601,10 @@ and puts the output in omatrix.
 
 EFUNC*/
 
-void ZigzagMatrix(int *imatrix, int *omatrix) {
+void ZigzagMatrix(int* imatrix, int* omatrix)
+{
     BEGIN("ZigzagMatrix");
-    int *tptr;
+    int* tptr;
 
     for (tptr = zigzag_index; tptr < zigzag_index + BLOCKSIZE; tptr++) {
         omatrix[*tptr] = *(imatrix++);
@@ -572,7 +616,8 @@ PrintMatrix() prints an 8x8 matrix in row/column form.
 
 EFUNC*/
 
-void PrintMatrix(int *matrix) {
+void PrintMatrix(int* matrix)
+{
     BEGIN("PrintMatrix");
     int i, j;
 
@@ -594,9 +639,10 @@ ClearMatrix() sets all the elements of a matrix to be zero.
 
 EFUNC*/
 
-void ClearMatrix(int *matrix) {
+void ClearMatrix(int* matrix)
+{
     BEGIN("ClearMatrix");
-    int *mptr;
+    int* mptr;
 
     for (mptr = matrix; mptr < matrix + BLOCKSIZE; mptr++) {
         *mptr = 0;

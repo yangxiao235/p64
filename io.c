@@ -24,9 +24,9 @@ io.c
 
 /*LABEL io.c */
 
-#include <stdlib.h>
-#include <stdio.h>
 #include "globals.h"
+#include <stdio.h>
+#include <stdlib.h>
 
 /*PUBLIC*/
 
@@ -60,9 +60,9 @@ extern void PrintIob();
 
 /*PRIVATE*/
 
-extern IMAGE *CImage;
-extern FRAME *CFrame;
-extern FSTORE *CFS;
+extern IMAGE* CImage;
+extern FRAME* CFrame;
+extern FSTORE* CFS;
 
 extern int MVDH;
 extern int MVDV;
@@ -70,7 +70,7 @@ extern int MVDV;
 extern int Loud;
 extern int ImageType;
 
-IOBUF *Iob=NULL;
+IOBUF* Iob = NULL;
 int BlockWidth = BLOCKWIDTH;
 int BlockHeight = BLOCKHEIGHT;
 
@@ -83,7 +83,7 @@ extern char tag[5];
 extern video_input vid;
 
 /* y4m output */
-extern FILE *y4mout;
+extern FILE* y4mout;
 
 /*START*/
 
@@ -94,30 +94,27 @@ instructions for all components of the frame.
 
 EFUNC*/
 
-void MakeIob(flag)
-     int flag;
+void MakeIob(flag) int flag;
 {
-  BEGIN("MakeIob");
-  int i;
+    BEGIN("MakeIob");
+    int i;
 
-  for(i=0;i<CFrame->NumberComponents;i++)
-    {
-      if (!(CFrame->Iob[i]=MakeStructure(IOBUF)))
-	{
-	  WHEREAMI();
-	  printf("Cannot make IO structure\n");
-	  exit(ERROR_MEMORY);
-	}
-      CFrame->Iob[i]->flag = flag;
-      CFrame->Iob[i]->hpos = 0;
-      CFrame->Iob[i]->vpos = 0;
-      CFrame->Iob[i]->hor = CFrame->hf[i];
-      CFrame->Iob[i]->ver = CFrame->vf[i];
-      CFrame->Iob[i]->width = CFrame->Width[i];
-      CFrame->Iob[i]->height = CFrame->Height[i];
-      CFrame->Iob[i]->mem = MakeMem(CFrame->Width[i],
-				    CFrame->Height[i]);
-    }      
+    for (i = 0; i < CFrame->NumberComponents; i++) {
+        if (!(CFrame->Iob[i] = MakeStructure(IOBUF))) {
+            WHEREAMI();
+            printf("Cannot make IO structure\n");
+            exit(ERROR_MEMORY);
+        }
+        CFrame->Iob[i]->flag = flag;
+        CFrame->Iob[i]->hpos = 0;
+        CFrame->Iob[i]->vpos = 0;
+        CFrame->Iob[i]->hor = CFrame->hf[i];
+        CFrame->Iob[i]->ver = CFrame->vf[i];
+        CFrame->Iob[i]->width = CFrame->Width[i];
+        CFrame->Iob[i]->height = CFrame->Height[i];
+        CFrame->Iob[i]->mem = MakeMem(CFrame->Width[i],
+            CFrame->Height[i]);
+    }
 }
 
 /*BFUNC
@@ -128,8 +125,8 @@ EFUNC*/
 
 void GlobalMC()
 {
-  BEGIN("GlobalMC");
-  MotionEstimation(Iob->mem,CFrame->Iob[0]->mem);
+    BEGIN("GlobalMC");
+    MotionEstimation(Iob->mem, CFrame->Iob[0]->mem);
 }
 
 /*BFUNC
@@ -139,24 +136,21 @@ corresponding portion of the memory in the IO buffer.
 
 EFUNC*/
 
-void SubOverlay(matrix)
-     int *matrix;
+void SubOverlay(matrix) int* matrix;
 {
-  BEGIN("SubOverlay");
-  int i,j;
-  unsigned char *memloc;
+    BEGIN("SubOverlay");
+    int i, j;
+    unsigned char* memloc;
 
-  memloc = (Iob->vpos * Iob->width * BlockHeight) + (Iob->hpos * BlockWidth)
-    + Iob->mem->data;
-  for(i=0;i<BlockHeight;i++)
-    {
-      for(j=0;j<BlockWidth;j++)
-	{
-	  *(matrix) =  *(matrix) - *memloc;
-	  matrix++;
-	  memloc++;
-	}
-      memloc = memloc-BlockWidth+Iob->width;
+    memloc = (Iob->vpos * Iob->width * BlockHeight) + (Iob->hpos * BlockWidth)
+        + Iob->mem->data;
+    for (i = 0; i < BlockHeight; i++) {
+        for (j = 0; j < BlockWidth; j++) {
+            *(matrix) = *(matrix) - *memloc;
+            matrix++;
+            memloc++;
+        }
+        memloc = memloc - BlockWidth + Iob->width;
     }
 }
 
@@ -167,25 +161,22 @@ structure to the matrix.
 
 EFUNC*/
 
-void AddOverlay(matrix)
-     int *matrix;
+void AddOverlay(matrix) int* matrix;
 {
-  BEGIN("AddOverlay");
-  int i,j;
-  unsigned char *memloc;
+    BEGIN("AddOverlay");
+    int i, j;
+    unsigned char* memloc;
 
-  memloc = (Iob->vpos * Iob->width * BlockHeight) + (Iob->hpos * BlockWidth)
-    + Iob->mem->data;
+    memloc = (Iob->vpos * Iob->width * BlockHeight) + (Iob->hpos * BlockWidth)
+        + Iob->mem->data;
 
-  for(i=0;i<BlockHeight;i++)
-    {
-      for(j=0;j<BlockWidth;j++)
-	{
-	  *(matrix) =  *(matrix) + *memloc;
-	  matrix++;
-	  memloc++;
-	}
-      memloc = memloc - BlockWidth + Iob->width;
+    for (i = 0; i < BlockHeight; i++) {
+        for (j = 0; j < BlockWidth; j++) {
+            *(matrix) = *(matrix) + *memloc;
+            matrix++;
+            memloc++;
+        }
+        memloc = memloc - BlockWidth + Iob->width;
     }
 }
 
@@ -197,25 +188,22 @@ and MVDV.
 
 EFUNC*/
 
-void SubCompensate(matrix)
-     int *matrix;
+void SubCompensate(matrix) int* matrix;
 {
-  BEGIN("SubCompensate");
-  int i,j;
-  unsigned char *memloc;
+    BEGIN("SubCompensate");
+    int i, j;
+    unsigned char* memloc;
 
-  memloc = (((Iob->vpos *  BlockHeight) + MVDV)*Iob->width)
-    + (Iob->hpos * BlockWidth) + MVDH
-      + Iob->mem->data;
-  for(i=0;i<BlockHeight;i++)
-    {
-      for(j=0;j<BlockWidth;j++)
-	{
-	  *(matrix) =  *(matrix) - *memloc;
-	  matrix++;
-	  memloc++;
-	}
-      memloc = memloc - BlockWidth + Iob->width;
+    memloc = (((Iob->vpos * BlockHeight) + MVDV) * Iob->width)
+        + (Iob->hpos * BlockWidth) + MVDH
+        + Iob->mem->data;
+    for (i = 0; i < BlockHeight; i++) {
+        for (j = 0; j < BlockWidth; j++) {
+            *(matrix) = *(matrix) - *memloc;
+            matrix++;
+            memloc++;
+        }
+        memloc = memloc - BlockWidth + Iob->width;
     }
 }
 
@@ -227,26 +215,23 @@ the global variables of MVDH and MVDV.
 
 EFUNC*/
 
-void AddCompensate(matrix)
-     int *matrix;
+void AddCompensate(matrix) int* matrix;
 {
-  BEGIN("AddCompensate");
-  int i,j;
-  unsigned char *memloc;
+    BEGIN("AddCompensate");
+    int i, j;
+    unsigned char* memloc;
 
-  memloc = (((Iob->vpos *  BlockHeight) + MVDV)*Iob->width)
-    + (Iob->hpos * BlockWidth) + MVDH
-      + Iob->mem->data;
+    memloc = (((Iob->vpos * BlockHeight) + MVDV) * Iob->width)
+        + (Iob->hpos * BlockWidth) + MVDH
+        + Iob->mem->data;
 
-  for(i=0;i<BlockHeight;i++)
-    {
-      for(j=0;j<BlockWidth;j++)
-	{
-	  *(matrix) =  *(matrix) + *memloc;
-	  matrix++;
-	  memloc++;
-	}
-      memloc = memloc - BlockWidth + Iob->width;
+    for (i = 0; i < BlockHeight; i++) {
+        for (j = 0; j < BlockWidth; j++) {
+            *(matrix) = *(matrix) + *memloc;
+            matrix++;
+            memloc++;
+        }
+        memloc = memloc - BlockWidth + Iob->width;
     }
 }
 
@@ -258,26 +243,23 @@ compensation variable in half.
 
 EFUNC*/
 
-void HalfSubCompensate(matrix)
-     int *matrix;
+void HalfSubCompensate(matrix) int* matrix;
 {
-  BEGIN("HalfSubCompensate");
-  int i,j;
-  unsigned char *memloc;
+    BEGIN("HalfSubCompensate");
+    int i, j;
+    unsigned char* memloc;
 
-  memloc = (((Iob->vpos *  BlockHeight) + (MVDV/2))*Iob->width)
-    + (Iob->hpos * BlockWidth) + (MVDH/2)
-      + Iob->mem->data;
+    memloc = (((Iob->vpos * BlockHeight) + (MVDV / 2)) * Iob->width)
+        + (Iob->hpos * BlockWidth) + (MVDH / 2)
+        + Iob->mem->data;
 
-  for(i=0;i<BlockHeight;i++)
-    {
-      for(j=0;j<BlockWidth;j++)
-	{
-	  *(matrix) =  *(matrix) - *memloc;
-	  matrix++;
-	  memloc++;
-	}
-      memloc = memloc - BlockWidth + Iob->width;
+    for (i = 0; i < BlockHeight; i++) {
+        for (j = 0; j < BlockWidth; j++) {
+            *(matrix) = *(matrix) - *memloc;
+            matrix++;
+            memloc++;
+        }
+        memloc = memloc - BlockWidth + Iob->width;
     }
 }
 
@@ -289,26 +271,23 @@ global input varaible vector in half.
 
 EFUNC*/
 
-void HalfAddCompensate(matrix)
-     int *matrix;
+void HalfAddCompensate(matrix) int* matrix;
 {
-  BEGIN("HalfAddCompensate");
-  int i,j;
-  unsigned char *memloc;
+    BEGIN("HalfAddCompensate");
+    int i, j;
+    unsigned char* memloc;
 
-  memloc = (((Iob->vpos *  BlockHeight) + (MVDV/2))*Iob->width)
-    + (Iob->hpos * BlockWidth) + (MVDH/2)
-      + Iob->mem->data;
+    memloc = (((Iob->vpos * BlockHeight) + (MVDV / 2)) * Iob->width)
+        + (Iob->hpos * BlockWidth) + (MVDH / 2)
+        + Iob->mem->data;
 
-  for(i=0;i<BlockHeight;i++)
-    {
-      for(j=0;j<BlockWidth;j++)
-	{
-	  *(matrix) =  *(matrix) + *memloc;
-	  matrix++;
-	  memloc++;
-	}
-      memloc = memloc - BlockWidth + Iob->width;
+    for (i = 0; i < BlockHeight; i++) {
+        for (j = 0; j < BlockWidth; j++) {
+            *(matrix) = *(matrix) + *memloc;
+            matrix++;
+            memloc++;
+        }
+        memloc = memloc - BlockWidth + Iob->width;
     }
 }
 
@@ -320,54 +299,49 @@ called.
 
 EFUNC*/
 
-void LoadFilterMatrix(memloc,output)
-     unsigned char *memloc;
-     int *output;
+void LoadFilterMatrix(memloc, output) unsigned char* memloc;
+int* output;
 {
-  BEGIN("LoadFilterMatrix");
-  int i,j;
-  int temp[64];
-  int *ptr,*ptr1,*ptr2,*ptr3;
+    BEGIN("LoadFilterMatrix");
+    int i, j;
+    int temp[64];
+    int *ptr, *ptr1, *ptr2, *ptr3;
 
-  for(ptr=temp,i=0;i<BlockHeight;i++)
-    {
-      *(ptr++)=(*(memloc)<<2);
-      for(j=1;j<BlockWidth-1;j++,ptr++)
-	{
-	  *(ptr) =  *(memloc++);
-	  *(ptr) +=  (*(memloc++) << 1);
-	  *(ptr) +=  *(memloc--);
-	}
-      memloc++;
-      *(ptr++) = (*(memloc++)<<2);
-      memloc = memloc-BlockWidth+Iob->width;
+    for (ptr = temp, i = 0; i < BlockHeight; i++) {
+        *(ptr++) = (*(memloc) << 2);
+        for (j = 1; j < BlockWidth - 1; j++, ptr++) {
+            *(ptr) = *(memloc++);
+            *(ptr) += (*(memloc++) << 1);
+            *(ptr) += *(memloc--);
+        }
+        memloc++;
+        *(ptr++) = (*(memloc++) << 2);
+        memloc = memloc - BlockWidth + Iob->width;
     }
-  for(ptr=output,ptr1=temp,ptr2=temp,ptr3=temp+(BlockWidth<<1),i=0;
-      i<BlockHeight;i++)
-    {
-      if ((i==0)||(i==7))
-	{
-	  for(j=0;j<BlockWidth;j++) {*(ptr++) = *(ptr2++);}
-	}
-      else
-	{
-	  for(j=0;j<BlockWidth;j++)
-	    {
-	      *(ptr) = (*(ptr2++)<<1);
-	      *(ptr) +=  *(ptr1++);
-	      *(ptr) +=  *(ptr3++);
-	      *ptr = (*ptr>>2);
-	      ptr++;
-	    }
-	}
+    for (ptr = output, ptr1 = temp, ptr2 = temp, ptr3 = temp + (BlockWidth << 1), i = 0;
+         i < BlockHeight; i++) {
+        if ((i == 0) || (i == 7)) {
+            for (j = 0; j < BlockWidth; j++) {
+                *(ptr++) = *(ptr2++);
+            }
+        } else {
+            for (j = 0; j < BlockWidth; j++) {
+                *(ptr) = (*(ptr2++) << 1);
+                *(ptr) += *(ptr1++);
+                *(ptr) += *(ptr3++);
+                *ptr = (*ptr >> 2);
+                ptr++;
+            }
+        }
     }
-  for(ptr=output,i=0;i<BlockHeight;i++)
-    {
-      for(j=0;j<BlockWidth;j++,ptr++)
-	{
-	  if (*ptr & 2) {*ptr=(*ptr>>2)+1;}
-	  else {*ptr=(*ptr>>2);}
-	}
+    for (ptr = output, i = 0; i < BlockHeight; i++) {
+        for (j = 0; j < BlockWidth; j++, ptr++) {
+            if (*ptr & 2) {
+                *ptr = (*ptr >> 2) + 1;
+            } else {
+                *ptr = (*ptr >> 2);
+            }
+        }
     }
 }
 
@@ -378,29 +352,25 @@ version of the input block.
 
 EFUNC*/
 
-void SubFCompensate(matrix)
-     int *matrix;
+void SubFCompensate(matrix) int* matrix;
 {
-  BEGIN("SubFCompensate");
-  int i,j;
-  unsigned char *memloc;
-  int temp[64];
-  int *ptr;
+    BEGIN("SubFCompensate");
+    int i, j;
+    unsigned char* memloc;
+    int temp[64];
+    int* ptr;
 
-  memloc = (((Iob->vpos *  BlockHeight) + MVDV)*Iob->width)
-    + (Iob->hpos * BlockWidth) + MVDH
-      + Iob->mem->data;
-  LoadFilterMatrix(memloc,temp);
-  for(ptr=temp,i=0;i<BlockHeight;i++)
-    {
-      for(j=0;j<BlockWidth;j++)
-	{
-	  *(matrix) =  *(matrix) - *(ptr++);
-	  matrix++;
-	}
+    memloc = (((Iob->vpos * BlockHeight) + MVDV) * Iob->width)
+        + (Iob->hpos * BlockWidth) + MVDH
+        + Iob->mem->data;
+    LoadFilterMatrix(memloc, temp);
+    for (ptr = temp, i = 0; i < BlockHeight; i++) {
+        for (j = 0; j < BlockWidth; j++) {
+            *(matrix) = *(matrix) - *(ptr++);
+            matrix++;
+        }
     }
 }
-
 
 /*BFUNC
 
@@ -409,29 +379,25 @@ version of the input block.
 
 EFUNC*/
 
-void AddFCompensate(matrix)
-     int *matrix;
+void AddFCompensate(matrix) int* matrix;
 {
-  BEGIN("AddFCompensate");
-  int i,j;
-  unsigned char *memloc;
-  int temp[64];
-  int *ptr;
+    BEGIN("AddFCompensate");
+    int i, j;
+    unsigned char* memloc;
+    int temp[64];
+    int* ptr;
 
-  memloc = (((Iob->vpos *  BlockHeight) + MVDV)*Iob->width)
-    + (Iob->hpos * BlockWidth) + MVDH
-      + Iob->mem->data;
-  LoadFilterMatrix(memloc,temp);
-  for(ptr=temp,i=0;i<BlockHeight;i++)
-    {
-      for(j=0;j<BlockWidth;j++)
-	{
-	  *(matrix) =  *(matrix) + *(ptr++);
-	  matrix++;
-	}
+    memloc = (((Iob->vpos * BlockHeight) + MVDV) * Iob->width)
+        + (Iob->hpos * BlockWidth) + MVDH
+        + Iob->mem->data;
+    LoadFilterMatrix(memloc, temp);
+    for (ptr = temp, i = 0; i < BlockHeight; i++) {
+        for (j = 0; j < BlockWidth; j++) {
+            *(matrix) = *(matrix) + *(ptr++);
+            matrix++;
+        }
     }
 }
-
 
 /*BFUNC
 
@@ -441,26 +407,23 @@ a factor of two.
 
 EFUNC*/
 
-void HalfSubFCompensate(matrix)
-     int *matrix;
+void HalfSubFCompensate(matrix) int* matrix;
 {
-  BEGIN("HalfSubFCompensate");
-  int i,j;
-  unsigned char *memloc;
-  int temp[64];
-  int *ptr;
+    BEGIN("HalfSubFCompensate");
+    int i, j;
+    unsigned char* memloc;
+    int temp[64];
+    int* ptr;
 
-  memloc = (((Iob->vpos *  BlockHeight) + (MVDV/2))*Iob->width)
-    + (Iob->hpos * BlockWidth) + (MVDH/2)
-      + Iob->mem->data;
-  LoadFilterMatrix(memloc,temp);
-  for(ptr=temp,i=0;i<BlockHeight;i++)
-    {
-      for(j=0;j<BlockWidth;j++)
-	{
-	  *(matrix) =  *(matrix) - *(ptr++);
-	  matrix++;
-	}
+    memloc = (((Iob->vpos * BlockHeight) + (MVDV / 2)) * Iob->width)
+        + (Iob->hpos * BlockWidth) + (MVDH / 2)
+        + Iob->mem->data;
+    LoadFilterMatrix(memloc, temp);
+    for (ptr = temp, i = 0; i < BlockHeight; i++) {
+        for (j = 0; j < BlockWidth; j++) {
+            *(matrix) = *(matrix) - *(ptr++);
+            matrix++;
+        }
     }
 }
 
@@ -472,26 +435,23 @@ two.
 
 EFUNC*/
 
-void HalfAddFCompensate(matrix)
-     int *matrix;
+void HalfAddFCompensate(matrix) int* matrix;
 {
-  BEGIN("HalfAddFCompensate");
-  int i,j;
-  unsigned char *memloc;
-  int temp[64];
-  int *ptr;
+    BEGIN("HalfAddFCompensate");
+    int i, j;
+    unsigned char* memloc;
+    int temp[64];
+    int* ptr;
 
-  memloc = (((Iob->vpos *  BlockHeight) + (MVDV/2))*Iob->width)
-    + (Iob->hpos * BlockWidth) + (MVDH/2)
-      + Iob->mem->data;
-  LoadFilterMatrix(memloc,temp);
-  for(ptr=temp,i=0;i<BlockHeight;i++)
-    {
-      for(j=0;j<BlockWidth;j++)
-	{
-	  *(matrix) =  *(matrix) + *(ptr++);
-	  matrix++;
-	}
+    memloc = (((Iob->vpos * BlockHeight) + (MVDV / 2)) * Iob->width)
+        + (Iob->hpos * BlockWidth) + (MVDH / 2)
+        + Iob->mem->data;
+    LoadFilterMatrix(memloc, temp);
+    for (ptr = temp, i = 0; i < BlockHeight; i++) {
+        for (j = 0; j < BlockWidth; j++) {
+            *(matrix) = *(matrix) + *(ptr++);
+            matrix++;
+        }
     }
 }
 
@@ -504,12 +464,11 @@ EFUNC*/
 
 void ClearIob()
 {
-  BEGIN("ClearIob");
-  int i;
+    BEGIN("ClearIob");
+    int i;
 
-  for(i=0;i<CFrame->NumberComponents;i++)
-    {
-      ClearMem(CFrame->Iob[i]->mem);
+    for (i = 0; i < CFrame->NumberComponents; i++) {
+        ClearMem(CFrame->Iob[i]->mem);
     }
 }
 
@@ -520,14 +479,13 @@ CopyIob2FS() copies all of the CFrame Iob's to a given frame store.
 EFUNC*/
 
 void CopyIob2FS(fs)
-     FSTORE *fs;
+    FSTORE* fs;
 {
-  BEGIN("CopyIob2FS");
-  int i;
+    BEGIN("CopyIob2FS");
+    int i;
 
-  for(i=0;i<CFrame->NumberComponents;i++)
-    {
-      CopyMem(CFrame->Iob[i]->mem,fs->fs[i]->mem);
+    for (i = 0; i < CFrame->NumberComponents; i++) {
+        CopyMem(CFrame->Iob[i]->mem, fs->fs[i]->mem);
     }
 }
 
@@ -538,14 +496,13 @@ ClearFS() clears the entire frame store passed into it.
 EFUNC*/
 
 void ClearFS(fs)
-     FSTORE *fs;
+    FSTORE* fs;
 {
-  BEGIN("ClearFS");
-  int i;
+    BEGIN("ClearFS");
+    int i;
 
-  for(i=0;i<fs->NumberComponents;i++)
-    {
-      ClearMem(fs->fs[i]->mem);
+    for (i = 0; i < fs->NumberComponents; i++) {
+        ClearMem(fs->fs[i]->mem);
     }
 }
 
@@ -558,16 +515,15 @@ returning the aggregate byte.
 EFUNC*/
 
 int ParityFS(fs)
-     FSTORE *fs;
+    FSTORE* fs;
 {
-  BEGIN("ParityFS");
-  int i,parity;
+    BEGIN("ParityFS");
+    int i, parity;
 
-  for(parity=0,i=0;i<fs->NumberComponents;i++)
-    {
-      parity ^= ParityMem(fs->fs[i]->mem);
+    for (parity = 0, i = 0; i < fs->NumberComponents; i++) {
+        parity ^= ParityMem(fs->fs[i]->mem);
     }
-  return(parity);
+    return (parity);
 }
 
 /*BFUNC
@@ -578,28 +534,26 @@ the IO structures and the memory structures.
 EFUNC*/
 
 void InitFS(fs)
-     FSTORE *fs;
+    FSTORE* fs;
 {
-  BEGIN("InitFS");
-  int i;
+    BEGIN("InitFS");
+    int i;
 
-  for(i=0;i<fs->NumberComponents;i++)
-    {
-      if (!(fs->fs[i]=MakeStructure(IOBUF)))
-	{
-	  WHEREAMI();
-	  printf("Cannot create IO structure.\n");
-	  exit(ERROR_MEMORY);
-	}
-      fs->fs[i]->flag = 0;
-      fs->fs[i]->hpos = 0;
-      fs->fs[i]->vpos = 0;
-      fs->fs[i]->hor = CFrame->hf[i];
-      fs->fs[i]->ver = CFrame->vf[i];
-      fs->fs[i]->width = CFrame->Width[i];
-      fs->fs[i]->height = CFrame->Height[i];
-      fs->fs[i]->mem = MakeMem(CFrame->Width[i],
-				CFrame->Height[i]);
+    for (i = 0; i < fs->NumberComponents; i++) {
+        if (!(fs->fs[i] = MakeStructure(IOBUF))) {
+            WHEREAMI();
+            printf("Cannot create IO structure.\n");
+            exit(ERROR_MEMORY);
+        }
+        fs->fs[i]->flag = 0;
+        fs->fs[i]->hpos = 0;
+        fs->fs[i]->vpos = 0;
+        fs->fs[i]->hor = CFrame->hf[i];
+        fs->fs[i]->ver = CFrame->vf[i];
+        fs->fs[i]->width = CFrame->Width[i];
+        fs->fs[i]->height = CFrame->Height[i];
+        fs->fs[i]->mem = MakeMem(CFrame->Width[i],
+            CFrame->Height[i]);
     }
 }
 
@@ -612,37 +566,32 @@ EFUNC*/
 
 void ReadIob()
 {
-  BEGIN("ReadIob");
-  int i;
+    BEGIN("ReadIob");
+    int i;
 
-	if(!y4mio)
-	{
-		/*Read current frame's Y, Cb, Cr components from seperate files*/
-		for(i=0;i<CFrame->NumberComponents;i++)
-		{
-			CFrame->Iob[i]->mem = LoadMem(	CFrame->ComponentFileName[i],
-											CFrame->Width[i],
-											CFrame->Height[i],
-											CFrame->Iob[i]->mem);
-		}
-	}
-	else
-	{
-		/*Read current frame's Y, Cb, Cr components from single y4m file*/
-		if( !video_input_fetch_frame(&vid, frame, tag) )
-			exit(ERROR_BOUNDS);
+    if (!y4mio) {
+        /*Read current frame's Y, Cb, Cr components from seperate files*/
+        for (i = 0; i < CFrame->NumberComponents; i++) {
+            CFrame->Iob[i]->mem = LoadMem(CFrame->ComponentFileName[i],
+                CFrame->Width[i],
+                CFrame->Height[i],
+                CFrame->Iob[i]->mem);
+        }
+    } else {
+        /*Read current frame's Y, Cb, Cr components from single y4m file*/
+        if (!video_input_fetch_frame(&vid, frame, tag))
+            exit(ERROR_BOUNDS);
 
-		for(i=0;i<CFrame->NumberComponents;i++)
-		{
-			if (!CFrame->Iob[i]->mem)
-				CFrame->Iob[i]->mem = MakeStructure(MEM);
+        for (i = 0; i < CFrame->NumberComponents; i++) {
+            if (!CFrame->Iob[i]->mem)
+                CFrame->Iob[i]->mem = MakeStructure(MEM);
 
-			CFrame->Iob[i]->mem->width = frame[i].width;
-			CFrame->Iob[i]->mem->height = frame[i].height;
-			CFrame->Iob[i]->mem->len = frame[i].width * frame[i].height;
-			CFrame->Iob[i]->mem->data = frame[i].data;
-		}
-	}
+            CFrame->Iob[i]->mem->width = frame[i].width;
+            CFrame->Iob[i]->mem->height = frame[i].height;
+            CFrame->Iob[i]->mem->len = frame[i].width * frame[i].height;
+            CFrame->Iob[i]->mem->data = frame[i].data;
+        }
+    }
 }
 
 /*BFUNC
@@ -651,12 +600,11 @@ InstallIob() installs a particular CFrame Iob as the target Iob.
 
 EFUNC*/
 
-void InstallIob(index)
-     int index;
+void InstallIob(index) int index;
 {
-  BEGIN("InstallIob");
+    BEGIN("InstallIob");
 
-  Iob = CFrame->Iob[index];
+    Iob = CFrame->Iob[index];
 }
 
 /*BFUNC
@@ -666,15 +614,13 @@ the target Iob.
 
 EFUNC*/
 
-void InstallFS(index,fs)
-     int index;
-     FSTORE *fs;
+void InstallFS(index, fs) int index;
+FSTORE* fs;
 {
-  BEGIN("InstallFS");
+    BEGIN("InstallFS");
 
-  Iob = fs->fs[index];
+    Iob = fs->fs[index];
 }
-
 
 /*BFUNC
 
@@ -685,28 +631,23 @@ EFUNC*/
 
 void WriteIob()
 {
-  BEGIN("WriteIob");
-  int i;
+    BEGIN("WriteIob");
+    int i;
 
-	if(!y4mio)
-	{
-		for(i=0;i<CFrame->NumberComponents;i++)
-		{
-			SaveMem(CFrame->ComponentFileName[i],CFrame->Iob[i]->mem);
-		}
-	}
-	else
-	{
-		MEM *mem;
-		
-		fwrite("FRAME\n",sizeof(unsigned char),sizeof("FRAME\n")-1,y4mout);
+    if (!y4mio) {
+        for (i = 0; i < CFrame->NumberComponents; i++) {
+            SaveMem(CFrame->ComponentFileName[i], CFrame->Iob[i]->mem);
+        }
+    } else {
+        MEM* mem;
 
-		for(i=0;i<CFrame->NumberComponents;i++)
-		{
-			mem = CFrame->Iob[i]->mem;
-			fwrite(mem->data,sizeof(unsigned char),mem->width*mem->height,y4mout);
-		}
-	}
+        fwrite("FRAME\n", sizeof(unsigned char), sizeof("FRAME\n") - 1, y4mout);
+
+        for (i = 0; i < CFrame->NumberComponents; i++) {
+            mem = CFrame->Iob[i]->mem;
+            fwrite(mem->data, sizeof(unsigned char), mem->width * mem->height, y4mout);
+        }
+    }
 }
 
 /*BFUNC
@@ -716,33 +657,30 @@ Gob, MDU, and horizontal and vertical offsets.
 
 EFUNC*/
 
-void MoveTo(g,m,h,v)
-     int g;
-     int m;
-     int h;
-     int v;
+void MoveTo(g, m, h, v) int g;
+int m;
+int h;
+int v;
 {
-  BEGIN("MoveTo");
+    BEGIN("MoveTo");
 
-  /* printf("moveto: IOB: %x  IOB->hor: %d %d %d %d %d\n",
+    /* printf("moveto: IOB: %x  IOB->hor: %d %d %d %d %d\n",
 	 Iob,Iob->hor,g,m,h,v);   fflush(stdout); rm, */
 
-
-  switch (ImageType)
-    {
+    switch (ImageType) {
     case IT_QCIF:
-      Iob->hpos = (m % 11)*Iob->hor + h;
-      Iob->vpos = ((g * 3) + (m / 11))*Iob->ver + v;
-      break;
+        Iob->hpos = (m % 11) * Iob->hor + h;
+        Iob->vpos = ((g * 3) + (m / 11)) * Iob->ver + v;
+        break;
     case IT_CIF:
     case IT_NTSC:
-      Iob->hpos = (((g & 1) * 11) + (m % 11))*Iob->hor + h;
-      Iob->vpos = (((g >> 1) * 3) + (m / 11))*Iob->ver + v;
-      break;
+        Iob->hpos = (((g & 1) * 11) + (m % 11)) * Iob->hor + h;
+        Iob->vpos = (((g >> 1) * 3) + (m / 11)) * Iob->ver + v;
+        break;
     default:
-      WHEREAMI();
-      printf("Unknown image type: %d.\n",ImageType);
-      break;
+        WHEREAMI();
+        printf("Unknown image type: %d.\n", ImageType);
+        break;
     }
 }
 
@@ -754,34 +692,28 @@ offset. It returns 0 on error.
 
 EFUNC*/
 
-int Bpos(g,m,h,v)
-     int g;
-     int m;
-     int h;
-     int v;
+int Bpos(g, m, h, v) int g;
+int m;
+int h;
+int v;
 {
-  BEGIN("Bpos");
+    BEGIN("Bpos");
 
-  switch (ImageType)
-    {
+    switch (ImageType) {
     case IT_QCIF:
-      return(((m % 11)*Iob->hor + h) + 
-	     ((((g * 3) + (m / 11))*Iob->ver + v)* Iob->width/BlockWidth));
-      break;
+        return (((m % 11) * Iob->hor + h) + ((((g * 3) + (m / 11)) * Iob->ver + v) * Iob->width / BlockWidth));
+        break;
     case IT_CIF:
     case IT_NTSC:
-      return(((((g & 1) * 11) + (m % 11))*Iob->hor + h) + 
-	     (((((g >> 1) * 3) + (m / 11))*Iob->ver + v)*
-	      Iob->width/BlockWidth));
-      break;
+        return (((((g & 1) * 11) + (m % 11)) * Iob->hor + h) + (((((g >> 1) * 3) + (m / 11)) * Iob->ver + v) * Iob->width / BlockWidth));
+        break;
     default:
-      WHEREAMI();
-      printf("Unknown image type: %d.\n",ImageType);
-      break;
+        WHEREAMI();
+        printf("Unknown image type: %d.\n", ImageType);
+        break;
     }
-  return(0);
+    return (0);
 }
-
 
 /*BFUNC
 
@@ -790,32 +722,30 @@ designated matrix.
 
 EFUNC*/
 
-void ReadBlock(store)
-     int *store;
+void ReadBlock(store) int* store;
 {
-  BEGIN("ReadBlock");
-  int i,j;
-  unsigned char *loc;
+    BEGIN("ReadBlock");
+    int i, j;
+    unsigned char* loc;
 
-  loc = Iob->vpos*Iob->width*BlockHeight
-    + Iob->hpos*BlockWidth+Iob->mem->data;
-  for(i=0;i<BlockHeight;i++)
-    {
-      for(j=0;j<BlockWidth;j++) {*(store++) = *(loc++);}
-      loc += Iob->width - BlockWidth;
+    loc = Iob->vpos * Iob->width * BlockHeight
+        + Iob->hpos * BlockWidth + Iob->mem->data;
+    for (i = 0; i < BlockHeight; i++) {
+        for (j = 0; j < BlockWidth; j++) {
+            *(store++) = *(loc++);
+        }
+        loc += Iob->width - BlockWidth;
     }
-  if ((++Iob->hpos % Iob->hor)==0)
-    {
-      if ((++Iob->vpos % Iob->ver) == 0)
-	{
-	  if (Iob->hpos < 
-	      ((Iob->width - 1)/(BlockWidth*Iob->hor))*Iob->hor + 1)
-	    {
-	      Iob->vpos -= Iob->ver;
-	    }
-	  else {Iob->hpos = 0;}
-	}
-      else {Iob->hpos -= Iob->hor;}
+    if ((++Iob->hpos % Iob->hor) == 0) {
+        if ((++Iob->vpos % Iob->ver) == 0) {
+            if (Iob->hpos < ((Iob->width - 1) / (BlockWidth * Iob->hor)) * Iob->hor + 1) {
+                Iob->vpos -= Iob->ver;
+            } else {
+                Iob->hpos = 0;
+            }
+        } else {
+            Iob->hpos -= Iob->hor;
+        }
     }
 }
 
@@ -826,31 +756,28 @@ designated IOB structure.
 
 EFUNC*/
 
-void WriteBlock(store)
-     int *store;
+void WriteBlock(store) int* store;
 {
-  int i,j;
-  unsigned char *loc;
+    int i, j;
+    unsigned char* loc;
 
-  loc = Iob->vpos*Iob->width*BlockHeight +
-    Iob->hpos*BlockWidth+Iob->mem->data;
-  for(i=0;i<BlockHeight;i++)
-    {
-      for(j=0;j<BlockWidth;j++)	{*(loc++) =  *(store++);}
-      loc += Iob->width - BlockWidth;
+    loc = Iob->vpos * Iob->width * BlockHeight + Iob->hpos * BlockWidth + Iob->mem->data;
+    for (i = 0; i < BlockHeight; i++) {
+        for (j = 0; j < BlockWidth; j++) {
+            *(loc++) = *(store++);
+        }
+        loc += Iob->width - BlockWidth;
     }
-  if ((++Iob->hpos % Iob->hor)==0)
-    {
-      if ((++Iob->vpos % Iob->ver) == 0)
-	{
-	  if (Iob->hpos < 
-	      ((Iob->width - 1)/(BlockWidth*Iob->hor))*Iob->hor + 1)
-	    {
-	      Iob->vpos -= Iob->ver;
-	    }
-	  else {Iob->hpos = 0;}
-	}
-      else {Iob->hpos -= Iob->hor;}
+    if ((++Iob->hpos % Iob->hor) == 0) {
+        if ((++Iob->vpos % Iob->ver) == 0) {
+            if (Iob->hpos < ((Iob->width - 1) / (BlockWidth * Iob->hor)) * Iob->hor + 1) {
+                Iob->vpos -= Iob->ver;
+            } else {
+                Iob->hpos = 0;
+            }
+        } else {
+            Iob->hpos -= Iob->hor;
+        }
     }
 }
 
@@ -863,14 +790,12 @@ EFUNC*/
 
 void PrintIob()
 {
-  printf("IOB: %x\n",Iob);
-  if (Iob)
-    {
-      printf("hor: %d  ver: %d  width: %d  height: %d\n",
-	     Iob->hor,Iob->ver,Iob->width,Iob->height);
-      printf("flag: %d  Memory Structure: %x\n",Iob->flag,Iob->mem);
+    printf("IOB: %x\n", Iob);
+    if (Iob) {
+        printf("hor: %d  ver: %d  width: %d  height: %d\n",
+            Iob->hor, Iob->ver, Iob->width, Iob->height);
+        printf("flag: %d  Memory Structure: %x\n", Iob->flag, Iob->mem);
     }
 }
 
 /*END*/
-
