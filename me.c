@@ -52,7 +52,7 @@ int MeMWOR[1024];
 int MX;
 int MY;
 int MV;
-int OMV;
+int OMV; // the error with original point(0,0)
 int MeX[1024];
 int MeY[1024];
 int MeVal[1024];

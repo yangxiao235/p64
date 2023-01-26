@@ -286,7 +286,10 @@ void WriteMBHeader()
 
     NumberBitsCoded = 0;
     if (MFMType[MType]) {
+        // see H.261 4.2.3.4
         if ((!MFMType[LastMType]) || (MBA != 1) || (LastMBA == -1) || (LastMBA == 10) || (LastMBA == 21)) {
+            // 1. the preceding macroblock is regarded as zero
+            // 2. 0x1f = 0 ~ 31, MVDH, MVDV must be >= 0
             if (!Encode(MVDH & 0x1f, MVDEHuff) || !Encode(MVDV & 0x1f, MVDEHuff)) {
                 WHEREAMI();
                 printf("Cannot encode motion vectors.\n");
